@@ -21,8 +21,8 @@ const map = new mapboxgl.Map({
 });
 
 const ut = require('../utils');
-ut.setMapMargin('bottom', $('#mapFooter').height(), map);
-ut.setMapMargin('top', $('#radarHeader').height(), map);
+ut.setMapMargin('bottom', 0, map);
+ut.setMapMargin('top', 0, map);
 
 if (require('../misc/detect_mobile_browser')) {
     const div = document.createElement('div');

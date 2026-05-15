@@ -1,0 +1,25 @@
+[build]
+  command   = ""
+  publish   = "."
+
+# Cache the heavy pre-built assets aggressively; they never change without a new deploy.
+[[headers]]
+  for = "/dist/bundle.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/index.css"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/*.mp3"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# All other files: short cache so updates show up quickly.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

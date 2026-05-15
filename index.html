@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>AtticRadar</title>
+    <title>SquishedGrape WX</title>
     <meta name="description" content="A clean, simple, but powerful weather toolkit for the web browser. Includes NEXRAD parsing and plotting, doppler velocity dealiasing, weather alerts, real time lightning data, METAR station data, and much more.">
     <link rel="icon" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
@@ -42,6 +42,7 @@
 
         html {
             overflow: hidden;
+            height: 100%;
         }
 
         body {
@@ -55,8 +56,13 @@
         body {
             margin: 0;
             padding: 0;
-
-            background-color: rgb(75, 75, 75);
+            height: 100%;
+            background-color: rgb(10, 10, 10);
+        }
+        #bodyDiv {
+            position: relative;
+            height: 100%;
+            overflow: hidden;
         }
         #loadingLibrariesDiv {
             position: absolute;
@@ -65,8 +71,7 @@
             width: 100%;
             z-index: 500000;
 
-            background: url('./logo.png') no-repeat center fixed, #7b7b7b;
-            background-size: contain;
+            background: linear-gradient(135deg, #0d0618 0%, #2a0f52 45%, #1a0a35 100%);
         }
         #loadingLibrariesDivContent {
             position: absolute;
@@ -75,19 +80,19 @@
             width: 100%;
             z-index: 500000;
 
-            color: rgb(200, 200, 200);
-            background-color: rgba(0, 0, 0, .5);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            color: rgb(220, 200, 255);
+            background-color: rgba(0, 0, 0, .35);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
 
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
 
-            /*font-family: 'Abel';*/
-            font-size: 50px;
-            font-weight: bold;
+            font-size: 34px;
+            font-weight: 900;
+            letter-spacing: 2px;
         }
         .progress_bar {
             position: absolute;
@@ -129,7 +134,7 @@
 
 <body>
     <div id="loadingLibrariesDiv">
-        <div id="loadingLibrariesDivContent">AtticRadar</div>
+        <div id="loadingLibrariesDivContent">SquishedGrape WX</div>
         <div id="loadingLibrariesProgressBar" class="progress_bar">
             <span id="progressBarText" class="progress_bar_text"></span>
             <div id="loadingLibrariesProgressBarInner" class="progress_bar_inner"></div>
@@ -149,70 +154,50 @@
     <br>
     <input type="text" id="multiplier" value="2" style="position: absolute; z-index: 1237109230; left: 200px"> -->
     <!--
-        MAP FOOTER
+        LEFT SIDEBAR NAV
     -->
     <div id="mapFooter" class="mapFooter">
-        <div id="productMapFooter" style="display: none">
-            <div id="productsDropdownTrigger" class="noselect pdt"><div id="productsDropdownTriggerText" class="icon-blue pdt">Products</div>
-                <div id="extraProductInfo" class="noselect" style="display: none">Info</div>
-            </div>
-            <div id="radarDateTime" class="noselect" style="display: none">Date & Time</div>
+        <div id="sgwxBrand" class="noselect" title="SquishedGrape WX">
+            <div class="brand-sg">SG</div>
+            <div class="brand-wx">Wx</div>
         </div>
-
-        <span class="noselect">&nbsp;&nbsp;&nbsp;</span>
-        <div id="stationMenuItemDiv" class="mapFooterMenuItem">
-            <span id="stationMenuItemIcon" class="fa fa-satellite-dish icon-grey menu_item_not_selected"></span>
+        <div class="sidebarDivider"></div>
+        <div id="stationMenuItemDiv" class="mapFooterMenuItem" title="Radar Station">
+            <span id="stationMenuItemIcon" class="fa fa-tower-broadcast icon-grey menu_item_not_selected"></span>
         </div>
-        <span class="noselect">&nbsp;&nbsp;&nbsp;</span>
-        <div id="alertMenuItemDiv" class="mapFooterMenuItem">
-            <span id="alertMenuItemIcon" class="fa fa-circle-exclamation icon-grey menu_item_not_selected"></span>
+        <div id="alertMenuItemDiv" class="mapFooterMenuItem" title="Weather Alerts">
+            <span id="alertMenuItemIcon" class="fa fa-triangle-exclamation icon-grey menu_item_not_selected"></span>
         </div>
-        <span class="noselect">&nbsp;&nbsp;&nbsp;</span>
-        <div id="metarStationMenuItemDiv" class="mapFooterMenuItem">
-            <span id="metarStationMenuItemIcon" class="fa fa-temperature-half icon-grey menu_item_not_selected"></span>
+        <div id="metarStationMenuItemDiv" class="mapFooterMenuItem" title="METAR Stations" style="display:none;">
+            <span id="metarStationMenuItemIcon" class="fa fa-cloud-sun icon-grey menu_item_not_selected"></span>
         </div>
-        <span class="noselect">&nbsp;&nbsp;&nbsp;</span>
-        <div id="colorPickerItemDiv" class="mapFooterMenuItem">
-            <span id="colorPickerItemClass" class="fa fa-crosshairs icon-grey menu_item_not_selected"></span>
+        <div id="colorPickerItemDiv" class="mapFooterMenuItem" title="Color Inspector" style="display:none;">
+            <span id="colorPickerItemClass" class="fa fa-eye-dropper icon-grey menu_item_not_selected"></span>
         </div>
-        <!-- <span class="noselect">&nbsp;&nbsp;&nbsp;</span>
-        <div id="lightningItemDiv" class="mapFooterMenuItem">
-            <span id="lightningItemClass" class="fa fa-bolt icon-grey"></span>
-        </div> -->
-        <span class="noselect">&nbsp;&nbsp;&nbsp;</span>
-        <div id="drawMenuItemDiv" class="mapFooterMenuItem">
-            <span id="drawMenuItemIcon" class="fa fa-pencil icon-grey menu_item_not_selected"></span>
+        <div id="drawMenuItemDiv" class="mapFooterMenuItem" title="Draw Tools" style="display:none;">
+            <span id="drawMenuItemIcon" class="fa fa-draw-polygon icon-grey menu_item_not_selected"></span>
         </div>
-        <!-- <span class="noselect">&nbsp;&nbsp;&nbsp;</span>
-        <div id="forecastMenuItemDiv" class="mapFooterMenuItem">
-            <span id="forecastMenuItemIcon" class="fa fa-cloud-sun icon-grey"></span>
-        </div> -->
-        <span class="noselect">&nbsp;&nbsp;&nbsp;</span>
-        <div id="settingsItemDiv" class="mapFooterMenuItem">
-            <span id="settingsItemClass" class="fa fa-sliders icon-grey menu_item_not_selected"></span>
+        <div id="sgwxSpcSidebarBtn" class="mapFooterMenuItem" title="SPC Outlooks">
+            <span class="fa fa-tornado icon-grey menu_item_not_selected"></span>
         </div>
-        <span class="noselect">&nbsp;&nbsp;&nbsp;</span>
-        <!-- <div id="toolsItemDiv" class="mapFooterMenuItem">
-            <span id="toolsItemClass" class="fa icon-grey fa-circle-chevron-right"></span>
+        <div id="sgwxModelsSidebarBtn" class="mapFooterMenuItem" title="Weather Models">
+            <span class="fa fa-chart-area icon-grey menu_item_not_selected"></span>
         </div>
-        <span class="noselect">&nbsp;&nbsp;&nbsp;</span> -->
+        <div id="settingsItemDiv" class="mapFooterMenuItem" title="Menu">
+            <span id="settingsItemClass" class="fa fa-bars icon-grey menu_item_not_selected"></span>
+        </div>
     </div>
 
-    <!--
-        MAP HEADER
-    -->
-    <div id="radarHeader" class="radarHeader">
-        <!-- <div id="top-left" style="color: #a0a0a0; font-size: 15px; line-height: 17px; text-align: left !important;">
-            <span><b style="font-weight: 900">AtticRadar</b><br>steepatticstairs.net</span>
-        </div> -->
-        <div id="top-right" style="font-weight: bold"></div>
-        <span id="radarInfoSpan" style="display: none">
-            <!-- <div style="font-size: 15px"><b>VCP: </b><a id='radarVCP'>None</a></div>
-            <div style="font-size: 12px"><sus id='radarStationParent'><i class="fa-solid fa-circle-info" id="radarStationIcon" style="display: none">&nbsp;&nbsp;</i><b id='radarStation'>No Station Selected</b></sus><a id="radarTime"></a></div> -->
-            <div style="font-size: 15px"><b class="icon-blue" id="radarStation" style="cursor: pointer">KLWX</b> <span id="radarLocation"></span></div>
-            <div style="font-size: 13px; color: rgb(161, 161, 161)"><span id="radarVCP"></span></div>
-        </span>
+    <!-- Product info bar (offset from sidebar) -->
+    <div id="productMapFooter" style="display: none">
+        <div id="productsDropdownTrigger" class="noselect pdt"><div id="productsDropdownTriggerText" class="icon-blue pdt">Products</div>
+            <div id="extraProductInfo" class="noselect" style="display: none">Info</div>
+        </div>
+        <div id="radarDateTime" class="noselect" style="display: none">Date & Time</div>
     </div>
+
+    <!-- Header removed — station info is in the floating infoPanel -->
+    <div id="radarHeader" class="radarHeader" style="display: none"></div>
 
     <!--
         THIS IS THE HTML FOR THE NEW MODAL (DIALOG) (i wrote it myself)
@@ -256,9 +241,9 @@
         <span>Unknown</span>
     </div>
 
-    <div id="attributionDiv" class="noselect">
+    <div id="attributionDiv" class="noselect" style="display:none;">
         <b id="attributionDivContent">
-            <span><b style="font-weight: 900; z-index: 1; position: relative; border-bottom: none;" class="attributionDivText">AtticRadar</b><br><span style="font-weight: normal" class="attributionDivText">steepatticstairs.net</span></span>
+            <span><b style="font-weight: 900; z-index: 1; position: relative; border-bottom: none;" class="attributionDivText">SquishedGrape WX</b></span>
         </b>
     </div>
 
@@ -282,62 +267,6 @@
                         <i class="armrIconArrowRight fa-solid fa-chevron-right"></i>
                     </div>
 
-                    <br>
-
-                    <div class="armrHeader">OPEN FILE</div>
-                    <div class="atticRadarMenuRow" id="armrUploadFileBtn">
-                        <i class="armrIcon armrIcon-Blue fa-solid fa-upload"></i>
-                        Upload Radar File
-                        <i class="armrIconArrowRight fa-solid fa-chevron-right"></i>
-                    </div>
-
-                    <br>
-
-                    <div class="armrHeader">LAYERS</div>
-                    <div class="atticRadarMenuRow armrTop" id="armrSPCOutlooksBtn">
-                        <i class="armrIcon armrIcon-Blue fa-solid fa-cloud-bolt"></i>
-                        SPC Outlooks
-                        <i class="armrIconArrowRight fa-solid fa-chevron-right"></i>
-                    </div>
-                    <!-- <div class="atticRadarMenuRow armrMiddle" id="armrHurricanesBtn">
-                        <i class="armrIcon armrIcon-Blue fa-solid fa-hurricane"></i>
-                        Hurricane Tracks
-                        <div class="form-check form-switch">
-                            <input class="form-check-input toggleSwitchContainter" onfocus="this.blur();" type="checkbox" role="switch" id="armrHurricanesBtnSwitchElem">
-                        </div>
-                    </div> -->
-                    <div class="atticRadarMenuRow armrMiddle" id="armrTideStationsBtn">
-                        <i class="armrIcon armrIcon-Blue fa-solid fa-ship"></i>
-                        Tide Stations
-                        <div class="form-check form-switch">
-                            <input class="form-check-input toggleSwitchContainter" onfocus="this.blur();" type="checkbox" role="switch" id="armrTideStationsBtnSwitchElem">
-                        </div>
-                    </div>
-                    <div class="atticRadarMenuRow armrMiddle" id="armrSurfaceFrontsBtn">
-                        <i class="armrIcon armrIcon-Blue fa-solid fa-wind"></i>
-                        Surface Fronts
-                        <div class="form-check form-switch">
-                            <input class="form-check-input toggleSwitchContainter" onfocus="this.blur();" type="checkbox" role="switch" id="armrSurfaceFrontsBtnSwitchElem">
-                        </div>
-                    </div>
-                    <div class="atticRadarMenuRow armrBottom" id="armrWeatherRadioBtn">
-                        <i class="armrIcon armrIcon-Blue fa-solid fa-radio"></i>
-                        NOAA Weather Radio
-                        <div class="form-check form-switch">
-                            <input class="form-check-input toggleSwitchContainter" onfocus="this.blur();" type="checkbox" role="switch" id="armrWeatherRadioBtnSwitchElem">
-                        </div>
-                    </div>
-
-                    <br>
-
-                    <div class="armrHeader">INFO</div>
-                    <div class="atticRadarMenuRow" id="armrAboutBtn">
-                        <i class="armrIcon armrIcon-Blue fa-solid fa-circle-info"></i>
-                        About
-                        <i class="armrIconArrowRight fa-solid fa-chevron-right"></i>
-                    </div>
-
-                    <br>
 
                     <!-- <br>
 
@@ -500,10 +429,10 @@
                         Dealiasing is the action of correcting issues in velocity sweeps.
                         When you load a Level 2 file and view its velocity data, a lot of the time,
                         the velocity values will seem wrong. There is a process to correct this, and it's called dealiasing.
-                        AtticRadar implements two dealiasing algorithms.
+                        SquishedGrape WX implements two dealiasing algorithms.
                         <br><br>
                         The <b>Region Based</b> algorithm was originally developed for use in the python package <a href="https://github.com/ARM-DOE/pyart" style="color: #53a2e0;">pyart</a>.
-                        I simply rewrote it in JavaScript, for use in AtticRadar. This algorithm is very robust, and is great at dealing with gaps in data, e.g. hurricanes.
+                        It was ported to JavaScript for use in SquishedGrape WX. This algorithm is very robust, and is great at dealing with gaps in data, e.g. hurricanes.
                         <br><br>
                         The <b>Tornadic</b> algorithm is much better suited for dealing with velocity scans with tornado signatures, or tight rotation in general.
                         The region based algorithm struggles with these cases, so if you find an issue with that algorithm, you should try this one.
@@ -816,22 +745,168 @@
     <div id="stationInp" style="display: none"></div>
     <canvas id="theCanvas" style="display: none"></canvas>
     <canvas id="texturecolorbar" style="display: none" class="texturecolorbar" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Default tooltip" data-bs-animation="false"></canvas>
-    <canvas id="mapColorScale" class="screenshot"></canvas>
-    <!-- <canvas id="mapColorScale"></canvas> -->
+    <!-- Floating info panel: station info + color scale (bottom-left) -->
+    <div id="infoPanel">
+        <span id="radarInfoSpan" style="display: none">
+            <div id="infoPanelStation">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+                    <div style="min-width:0;">
+                        <b class="icon-blue" id="radarStation" style="cursor: pointer; font-size: 15px;">KLWX</b>&nbsp;<span id="radarLocation" style="font-size: 13px; color: rgb(175,175,175);"></span>
+                    </div>
+                    <button id="infoPanelProductsBtn" title="Radar Products">
+                        <i class="fa fa-sliders"></i>
+                    </button>
+                </div>
+                <div style="font-size: 12px; color: rgb(150, 150, 150);"><span id="radarVCP"></span></div>
+            </div>
+        </span>
+        <div id="top-right" style="font-weight: bold;"></div>
+        <canvas id="mapColorScale" class="screenshot"></canvas>
+    </div>
 
     <div id="map" class="screenshot"></div>
 
+    <!-- Weather Alerts settings panel -->
+    <div id="sgwxAlertsPanel" class="sgwxPanel" style="display:none; left:70px; top:120px; width:220px;">
+        <div id="sgwxAlertsHeader" class="sgwxPanelHeader">
+            <span class="sgwxPanelTitle"><i class="fa fa-triangle-exclamation" style="margin-right:6px; font-size:11px;"></i>Weather Alerts</span>
+            <label class="sgwxKeepActiveRow" title="Keep alerts active when panel is closed">
+                <input type="checkbox" id="sgwxAlertsKeepActive" class="sgwxToggleCheck">
+                <span class="sgwxToggleSlider sgwxToggleSliderSm"></span>
+                <span class="sgwxKeepActiveLabel">Keep Active</span>
+            </label>
+            <button id="sgwxAlertsClose" class="sgwxPanelCloseBtn">&#x2715;</button>
+        </div>
+        <div class="sgwxPanelBody">
+
+            <div class="sgwxSpcGroupLabel" style="margin-bottom:6px;">Alert Types</div>
+
+            <label class="sgwxAlertToggleRow">
+                <span class="sgwxAlertToggleLabel">Warnings</span>
+                <span class="sgwxAlertToggleHint">Tornado, SVR, Flash Flood…</span>
+                <input type="checkbox" id="sgwxAlertWarnings" class="sgwxToggleCheck" checked>
+                <span class="sgwxToggleSlider"></span>
+            </label>
+            <label class="sgwxAlertToggleRow">
+                <span class="sgwxAlertToggleLabel">Watches</span>
+                <span class="sgwxAlertToggleHint">Tornado Watch, SVR Watch…</span>
+                <input type="checkbox" id="sgwxAlertWatches" class="sgwxToggleCheck" checked>
+                <span class="sgwxToggleSlider"></span>
+            </label>
+            <label class="sgwxAlertToggleRow">
+                <span class="sgwxAlertToggleLabel">Statements</span>
+                <span class="sgwxAlertToggleHint">Special Weather Statements</span>
+                <input type="checkbox" id="sgwxAlertStatements" class="sgwxToggleCheck" checked>
+                <span class="sgwxToggleSlider"></span>
+            </label>
+            <label class="sgwxAlertToggleRow">
+                <span class="sgwxAlertToggleLabel">Discussions</span>
+                <span class="sgwxAlertToggleHint">Mesoscale Discussions</span>
+                <input type="checkbox" id="sgwxAlertDiscussions" class="sgwxToggleCheck" checked>
+                <span class="sgwxToggleSlider"></span>
+            </label>
+
+            <div class="sgwxSpcDivider"></div>
+
+            <div class="sgwxSpcGroupLabel" style="margin-bottom:6px;">Vocal Alerts</div>
+
+            <label class="sgwxAlertToggleRow" style="margin-bottom:10px;">
+                <span class="sgwxAlertToggleLabel">Speak new alerts</span>
+                <span class="sgwxAlertToggleHint">Uses browser text-to-speech</span>
+                <input type="checkbox" id="sgwxVocalAlertsOn" class="sgwxToggleCheck">
+                <span class="sgwxToggleSlider"></span>
+            </label>
+
+            <button id="sgwxVocalTestBtn" class="sgwxVocalTestBtn">
+                <i class="fa fa-volume-high" style="margin-right:5px;"></i>Test Voice
+            </button>
+
+        </div>
     </div>
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DFPY4VLRJR"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
+    <!-- SPC Outlooks floating panel -->
+    <div id="sgwxSpcPanel" class="sgwxPanel" style="display:none; left:70px; top:120px; width:250px;">
+        <div id="sgwxSpcHeader" class="sgwxPanelHeader">
+            <span class="sgwxPanelTitle"><i class="fa fa-tornado" style="margin-right:6px; font-size:11px;"></i>SPC Outlooks</span>
+            <label class="sgwxKeepActiveRow" title="Keep overlay on map when panel is closed">
+                <input type="checkbox" id="sgwxSpcKeepActive" class="sgwxToggleCheck">
+                <span class="sgwxToggleSlider sgwxToggleSliderSm"></span>
+                <span class="sgwxKeepActiveLabel">Keep Active</span>
+            </label>
+            <button id="sgwxSpcClose" class="sgwxPanelCloseBtn">&#x2715;</button>
+        </div>
+        <div class="sgwxPanelBody">
+            <div class="sgwxSpcGroup">
+                <div class="sgwxSpcGroupLabel">Categorical</div>
+                <div class="sgwxSpcBtnRow">
+                    <button class="sgwxSpcBtn" data-type="convective" data-cat="categorical" data-day="day1">Day 1</button>
+                    <button class="sgwxSpcBtn" data-type="convective" data-cat="categorical" data-day="day2">Day 2</button>
+                    <button class="sgwxSpcBtn" data-type="convective" data-cat="categorical" data-day="day3">Day 3</button>
+                </div>
+            </div>
+            <div class="sgwxSpcGroup">
+                <div class="sgwxSpcGroupLabel">Tornado Prob.</div>
+                <div class="sgwxSpcBtnRow">
+                    <button class="sgwxSpcBtn" data-type="convective" data-cat="tornado" data-day="day1">Day 1</button>
+                    <button class="sgwxSpcBtn" data-type="convective" data-cat="tornado" data-day="day2">Day 2</button>
+                </div>
+            </div>
+            <div class="sgwxSpcGroup">
+                <div class="sgwxSpcGroupLabel">Wind Prob.</div>
+                <div class="sgwxSpcBtnRow">
+                    <button class="sgwxSpcBtn" data-type="convective" data-cat="wind" data-day="day1">Day 1</button>
+                    <button class="sgwxSpcBtn" data-type="convective" data-cat="wind" data-day="day2">Day 2</button>
+                </div>
+            </div>
+            <div class="sgwxSpcGroup">
+                <div class="sgwxSpcGroupLabel">Hail Prob.</div>
+                <div class="sgwxSpcBtnRow">
+                    <button class="sgwxSpcBtn" data-type="convective" data-cat="hail" data-day="day1">Day 1</button>
+                    <button class="sgwxSpcBtn" data-type="convective" data-cat="hail" data-day="day2">Day 2</button>
+                </div>
+            </div>
+            <div class="sgwxSpcDivider"></div>
 
-        gtag('config', 'G-DFPY4VLRJR');
-    </script>
+            <!-- Opacity slider -->
+            <div class="sgwxSpcGroup" style="margin-bottom:6px;">
+                <div class="sgwxSpcGroupLabel">Overlay Opacity</div>
+                <div class="sgwxSpcOpacityRow">
+                    <span class="sgwxSpcOpacityHint">0%</span>
+                    <input type="range" id="sgwxSpcOpacity" class="sgwxSpcSlider" min="0" max="100" value="50">
+                    <span class="sgwxSpcOpacityHint">100%</span>
+                </div>
+            </div>
+
+            <!-- Dynamic legend — populated after an overlay loads -->
+            <div id="sgwxSpcLegend" class="sgwxSpcLegend" style="display:none;"></div>
+
+            <!-- Valid-time status line -->
+            <div id="sgwxSpcStatus" class="sgwxSpcStatus" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- Weather Models panel (Windy embed) -->
+    <div id="sgwxModelsPanel" class="sgwxPanel" style="display:none; left:80px; top:60px; width:780px; height:530px; overflow:hidden; resize:both;">
+        <div id="sgwxModelsHeader" class="sgwxPanelHeader">
+            <span class="sgwxPanelTitle"><i class="fa fa-chart-area" style="margin-right:6px; font-size:11px;"></i>Weather Models</span>
+            <div class="sgwxModelsTabBar">
+                <button class="sgwxModelsTab sgwxModelsTabActive" data-model="hrrr">HRRR</button>
+                <button class="sgwxModelsTab" data-model="gfs">GFS</button>
+                <button class="sgwxModelsTab" data-model="nam">NAM</button>
+                <button class="sgwxModelsTab" data-model="ecmwf">ECMWF</button>
+                <button class="sgwxModelsTab" data-model="spcmeso">SPC Meso</button>
+            </div>
+            <button id="sgwxModelsClose" class="sgwxPanelCloseBtn">&#x2715;</button>
+        </div>
+        <iframe id="sgwxWindyFrame" src="" style="width:100%; height:calc(100% - 34px); border:none; display:block;"></iframe>
+    </div>
+
+    <!-- Weather alert ticker — full-width scrolling bar at bottom -->
+    <div id="sgwxTicker" style="display:none;">
+        <div id="sgwxTickerTrack"></div>
+    </div>
+
+    </div>
 
     <script>
         window.longProductNames = {
@@ -976,6 +1051,25 @@
             })
         }
 
+        // corsproxy.io returns 403 for SPC NOAA endpoints; SPC has public CORS headers,
+        // so strip the proxy prefix and fetch directly for those domains.
+        (function() {
+            var _origFetch = window.fetch;
+            var proxyPrefix = 'https://corsproxy.io/?url=';
+            var directDomains = [
+                'https://www.spc.noaa.gov/',
+            ];
+            window.fetch = function(input, init) {
+                if (typeof input === 'string' && input.startsWith(proxyPrefix)) {
+                    var actual = input.slice(proxyPrefix.length);
+                    if (directDomains.some(function(d) { return actual.startsWith(d); })) {
+                        return _origFetch(actual, init);
+                    }
+                }
+                return _origFetch(input, init);
+            };
+        })();
+
         document.getElementById('bodyDiv').style.display = 'none';
         load_all_libraries([
             ['js', 'https://code.jquery.com/jquery-3.2.1.min.js', 86659],
@@ -984,6 +1078,15 @@
 
             ['css', 'https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css', 36640],
             ['js', 'https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js', 971097],
+
+            // SPC panel: intercepts mapboxgl.Map to capture the instance, defines _sgwxSpcInit
+            ['js', './app/spc/panel_init.js', 0],
+
+            // Alerts settings panel: filter toggles + vocal alerts, defines _sgwxAlertsInit
+            ['js', './app/alerts/alert_panel.js', 0],
+
+            // Weather Models panel: Windy embed, defines _sgwxModelsInit
+            ['js', './app/models/models_panel.js', 0],
 
             // https://cdnjs.com/libraries/font-awesome
             ['css', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css', 100782],
@@ -1050,6 +1153,17 @@
         ], () => {
             document.getElementById('bodyDiv').style.display = 'block';
             document.getElementById('loadingLibrariesDiv').style.display = 'none';
+            if (window._sgwxSpcInit)    window._sgwxSpcInit();
+            if (window._sgwxAlertsInit) window._sgwxAlertsInit();
+            if (window._sgwxModelsInit) window._sgwxModelsInit();
+
+            // Radar products button — position the menu flush below the info panel then open it.
+            $('#infoPanelProductsBtn').on('click', function(e) {
+                e.stopPropagation();
+                var rect = document.getElementById('infoPanel').getBoundingClientRect();
+                $('#productSelectionMenu').css('top', rect.bottom + 4);
+                $('#productsDropdownTrigger').trigger('click');
+            });
         })
     </script>
 </body>

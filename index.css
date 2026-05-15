@@ -44,9 +44,11 @@ hr {
 
 #map {
     position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 100%;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 60px;
+    width: calc(100% - 60px);
+    background-color: rgb(10, 10, 10);
 }
 
 .false-anchor {
@@ -338,21 +340,37 @@ https://tobiasahlin.com/spinkit/
 
 
 .mapFooter {
-    position: absolute;
+    position: fixed;
     z-index: 120;
-    bottom: 0%;
-    height: 55px;
-    width: 100%;
-    background-color: rgb(32, 32, 32);
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 60px;
+    background-color: rgb(22, 22, 22);
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    gap: 4px;
+    box-sizing: border-box;
+    border-right: 1px solid rgb(45, 45, 45);
 }
 .mapFooter span {
-    font-size: 23px;
+    font-size: 20px;
 }
 .mapFooterMenuItem {
     cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    transition: background-color 0.15s;
+}
+.mapFooterMenuItem:hover {
+    background-color: rgb(45, 45, 45);
 }
 
 .menu_item_selected {
@@ -378,10 +396,12 @@ https://tobiasahlin.com/spinkit/
 }
 
 #productMapFooter {
-    position: absolute;
+    position: fixed;
     z-index: 120;
+    left: 60px;
+    bottom: 0;
     height: 45px;
-    width: 100%;
+    width: calc(100% - 60px);
     background-color: rgb(45, 45, 45);
     color: white;
     display: flex;
@@ -413,8 +433,9 @@ https://tobiasahlin.com/spinkit/
     position: absolute;
     z-index: 115;
     top: 0%;
+    left: 60px;
     height: 50px;
-    width: 100%;
+    width: calc(100% - 60px);
     background-color: rgb(32, 32, 32);
     display: flex;
     justify-content: center;
@@ -431,26 +452,22 @@ https://tobiasahlin.com/spinkit/
     display: flex;
 }
 #top-right {
-    position: absolute;
-    right: 10px;
     display: flex;
 }
 
 .progressBar {
     position: absolute;
     z-index: 115;
-    top: 50px;
-    height: 10px;
+    top: 0;
+    height: 4px;
     width: 100%;
     background-color: rgb(20, 103, 204);
 }
 #mapColorScale {
-    position: absolute;
-    z-index: 115;
     width: 100%;
     display: none;
-    /* bottom: 50px;
-    height: 10px; */
+    border-top: 1px solid rgb(52, 52, 52);
+    border-radius: 0 0 10px 10px;
 }
 
 .centerImg {
@@ -604,7 +621,7 @@ https://tobiasahlin.com/spinkit/
     position: absolute;
     z-index: 100;
     top: 50px;
-    left: 0;
+    left: 60px;
 }
 #haClearMapOuter {
     margin: 8px 40px -8px 8px;
@@ -903,25 +920,20 @@ https://tobiasahlin.com/spinkit/
 }
 #atticRadarMenuContainer {
     position: absolute;
-    left: 0;
-    right: 0;
+    left: 60px;
+    top: 0;
     bottom: 0;
-    top: 7vh;
-    margin: auto;
-    overflow: scroll;
+    overflow-y: scroll;
 
-    width: 90vw;
-    max-width: 550px;
-    /* height: 85vh;
-    max-height: 85vh; */
+    width: 320px;
+    max-width: calc(100vw - 60px);
 
     background-color: rgb(28, 28, 28);
 
-    border-top-left-radius: 10px;
     border-top-right-radius: 10px;
-    border-left: 1px solid black;
-    border-top: 1px solid black;
+    border-bottom-right-radius: 10px;
     border-right: 1px solid black;
+    border-bottom: 1px solid black;
 }
 #atticRadarMenuBody {
     color: #aeaeae;
@@ -1153,12 +1165,13 @@ https://tobiasahlin.com/spinkit/
 }
 
 #productSelectionMenu {
-    position: absolute;
+    position: fixed;
     z-index: 997;
-    bottom: 50px;
-    left: 10px;
+    top: auto;
+    right: 10px;
+    left: auto;
     height: auto;
-    max-height: 200px;
+    max-height: 60vh;
     width: auto;
 
     background-color: rgb(66, 66, 66);
@@ -1651,4 +1664,555 @@ td.day.active, span.month.active, span.year.active {
     z-index: 1000000;
     background-color: rgba(0, 0, 0, 0.25);
     /* pointer-events: none; */
+}
+
+/* ── SquishedGrape WX Sidebar Branding ── */
+#sgwxBrand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.1;
+    margin-bottom: 2px;
+    cursor: default;
+    user-select: none;
+}
+.brand-sg {
+    color: rgb(165, 105, 230);
+    font-weight: 900;
+    font-size: 15px;
+    letter-spacing: 1px;
+}
+.brand-wx {
+    color: rgb(92, 157, 255);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+.sidebarDivider {
+    width: 38px;
+    height: 1px;
+    background-color: rgb(52, 52, 52);
+    margin: 4px 0;
+    flex-shrink: 0;
+}
+
+/* ── Floating info + color scale panel ── */
+#infoPanel {
+    position: fixed;
+    z-index: 200;
+    right: 10px;
+    top: 10px;
+    width: 12.5vw;
+    min-width: 165px;
+    max-width: 230px;
+    background-color: rgba(20, 20, 20, 0.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgb(52, 52, 52);
+    border-radius: 10px;
+    overflow: hidden;
+    color: white;
+    pointer-events: none;
+}
+#infoPanelStation {
+    padding: 8px 10px 6px;
+    pointer-events: auto;
+}
+#infoPanelProductsBtn {
+    flex-shrink: 0;
+    background: none;
+    border: 1px solid rgb(58, 58, 58);
+    border-radius: 5px;
+    color: rgb(135, 135, 135);
+    font-size: 12px;
+    padding: 3px 7px;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+#infoPanelProductsBtn:hover {
+    background-color: rgb(48, 48, 48);
+    color: rgb(210, 210, 210);
+    border-color: rgb(90, 90, 90);
+}
+#infoPanel #top-right {
+    position: static;
+    font-size: 11px;
+    color: rgb(165, 165, 165);
+    padding: 0 10px 5px;
+    pointer-events: auto;
+}
+
+/* ── SPC Floating Panel ──────────────────────────────────── */
+.sgwxPanel {
+    position: fixed;
+    z-index: 300;
+    background-color: rgba(20, 20, 20, 0.96);
+    border: 1px solid rgb(52, 52, 52);
+    border-radius: 10px;
+    color: white;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+    overflow: auto;
+    resize: both;
+}
+.sgwxPanelHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background-color: rgb(30, 30, 30);
+    border-bottom: 1px solid rgb(48, 48, 48);
+    cursor: move;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.sgwxPanelTitle {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgb(195, 195, 195);
+    letter-spacing: 0.3px;
+}
+.sgwxPanelCloseBtn {
+    background: none;
+    border: none;
+    color: rgb(130, 130, 130);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 1;
+    transition: color 0.15s;
+}
+.sgwxPanelCloseBtn:hover { color: white; }
+.sgwxPanelBody {
+    padding: 10px;
+}
+.sgwxSpcGroup {
+    margin-bottom: 10px;
+}
+.sgwxSpcGroup:last-child { margin-bottom: 0; }
+.sgwxSpcGroupLabel {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgb(105, 105, 105);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 5px;
+}
+.sgwxSpcBtnRow {
+    display: flex;
+    gap: 5px;
+}
+.sgwxSpcBtn {
+    flex: 1;
+    padding: 5px 6px;
+    background-color: rgb(38, 38, 38);
+    border: 1px solid rgb(60, 60, 60);
+    border-radius: 6px;
+    color: rgb(175, 175, 175);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+.sgwxSpcBtn:hover {
+    background-color: rgb(52, 52, 52);
+    color: white;
+}
+.sgwxSpcBtnActive {
+    background-color: rgb(45, 85, 185) !important;
+    border-color: rgb(70, 120, 255) !important;
+    color: white !important;
+}
+.sgwxSpcBtnLoading {
+    opacity: 0.55;
+    cursor: wait !important;
+}
+.sgwxSpcStatus {
+    font-size: 10px;
+    color: rgb(120, 120, 120);
+    padding-top: 8px;
+    margin-top: 8px;
+    border-top: 1px solid rgb(42, 42, 42);
+}
+
+/* ── Alerts Panel Toggle Rows ─────────────────────────────────────────── */
+.sgwxAlertToggleRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 0;
+    cursor: pointer;
+    border-bottom: 1px solid rgb(38, 38, 38);
+}
+.sgwxAlertToggleRow:last-of-type { border-bottom: none; }
+.sgwxAlertToggleLabel {
+    font-size: 12px;
+    color: rgb(190, 190, 190);
+    flex: 1;
+    min-width: 0;
+}
+.sgwxAlertToggleHint {
+    display: none; /* revealed via title attribute instead to save space */
+}
+/* Custom pill toggle switch */
+.sgwxToggleCheck {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.sgwxToggleSlider {
+    flex-shrink: 0;
+    display: inline-block;
+    width: 32px;
+    height: 18px;
+    background: rgb(55, 55, 55);
+    border-radius: 9px;
+    position: relative;
+    transition: background 0.2s;
+    border: 1px solid rgb(75, 75, 75);
+}
+.sgwxToggleSlider::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    background: rgb(130, 130, 130);
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+}
+.sgwxToggleCheck:checked + .sgwxToggleSlider {
+    background: rgb(45, 90, 200);
+    border-color: rgb(70, 120, 255);
+}
+.sgwxToggleCheck:checked + .sgwxToggleSlider::after {
+    transform: translateX(14px);
+    background: white;
+}
+.sgwxAlertToggleRow:hover .sgwxToggleSlider {
+    border-color: rgb(100, 100, 100);
+}
+/* Test voice button */
+.sgwxVocalTestBtn {
+    width: 100%;
+    padding: 7px 10px;
+    background: rgb(38, 38, 38);
+    border: 1px solid rgb(65, 65, 65);
+    border-radius: 7px;
+    color: rgb(180, 180, 180);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    text-align: center;
+}
+.sgwxVocalTestBtn:hover {
+    background: rgb(52, 52, 52);
+    color: white;
+}
+
+/* Divider between button groups and controls */
+.sgwxSpcDivider {
+    height: 1px;
+    background-color: rgb(45, 45, 45);
+    margin: 8px 0;
+}
+
+/* Opacity slider row */
+.sgwxSpcOpacityRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.sgwxSpcOpacityHint {
+    font-size: 9px;
+    color: rgb(90, 90, 90);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.sgwxSpcSlider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: rgb(65, 65, 65);
+    outline: none;
+    cursor: pointer;
+}
+.sgwxSpcSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgb(100, 150, 255);
+    cursor: pointer;
+    border: 2px solid rgb(60, 100, 200);
+}
+.sgwxSpcSlider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgb(100, 150, 255);
+    cursor: pointer;
+    border: 2px solid rgb(60, 100, 200);
+}
+
+/* Dynamic legend */
+.sgwxSpcLegend {
+    padding-top: 8px;
+    margin-top: 6px;
+    border-top: 1px solid rgb(42, 42, 42);
+}
+.sgwxSpcLegendItem {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 2px 0;
+}
+.sgwxSpcLegendSwatch {
+    display: inline-block;
+    width: 16px;
+    height: 12px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+.sgwxSpcLegendLabel {
+    font-size: 11px;
+    color: rgb(185, 185, 185);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* jQuery UI resize handle visibility inside the panel */
+#sgwxSpcPanel .ui-resizable-handle { z-index: 301; }
+
+/* ── Weather Alert Ticker ─────────────────────────────────────────────── */
+#sgwxTicker {
+    position: fixed;
+    z-index: 250;
+    bottom: 0;
+    left: 60px;
+    right: 0;
+    height: 30px;
+    background-color: rgb(10, 10, 10);
+    border-top: 1px solid rgb(40, 40, 40);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}
+#sgwxTickerTrack {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    will-change: transform;
+}
+.sgwxTickerItem {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 14px;
+    margin-right: 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.sgwxTickerItem i {
+    margin-right: 5px;
+    font-size: 10px;
+}
+.sgwxTickerWarn    { background: rgb(185, 28, 28); }
+.sgwxTickerWatch   { background: rgb(180, 130, 0); }
+.sgwxTickerAdvisory{ background: rgb(25, 80, 180); }
+
+/* Keep-active toggle in panel headers */
+.sgwxKeepActiveRow {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    margin-right: 6px;
+}
+.sgwxKeepActiveLabel {
+    font-size: 10px;
+    color: rgb(110, 110, 110);
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+}
+/* Small variant of the toggle slider (used in panel header) */
+.sgwxToggleSliderSm {
+    width: 24px;
+    height: 14px;
+    border-radius: 7px;
+}
+.sgwxToggleSliderSm::after {
+    width: 8px;
+    height: 8px;
+    top: 2px;
+    left: 2px;
+}
+.sgwxToggleCheck:checked + .sgwxToggleSliderSm::after {
+    transform: translateX(10px);
+}
+
+/* ── Weather Models Panel ─────────────────────────────────────────────── */
+#sgwxModelsPanel {
+    min-width: 380px;
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+}
+.sgwxModelsTabBar {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+    margin-left: 10px;
+    margin-right: 6px;
+}
+.sgwxModelsTab {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 4px;
+    color: rgb(165, 165, 165);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 10px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.sgwxModelsTab:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: white;
+}
+.sgwxModelsTabActive {
+    background: rgba(92, 157, 255, 0.25);
+    border-color: rgba(92, 157, 255, 0.55);
+    color: rgb(180, 210, 255);
+}
+
+/* ── Mobile / Phone Layout (≤ 768 px) ────────────────────────────────── */
+@media (max-width: 768px) {
+
+    /* Sidebar → bottom navigation bar */
+    .mapFooter {
+        top: auto !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0;
+        height: 60px !important;
+        width: 100% !important;
+        flex-direction: row !important;
+        padding: 0 6px !important;
+        gap: 2px !important;
+        border-right: none !important;
+        border-top: 1px solid rgb(45, 45, 45);
+        overflow-x: auto;
+        overflow-y: hidden;
+        justify-content: space-around !important;
+    }
+    .mapFooter span { font-size: 18px !important; }
+    .mapFooterMenuItem {
+        width: 46px !important;
+        height: 46px !important;
+        flex-shrink: 0;
+    }
+
+    /* Brand collapses to a small horizontal pill */
+    #sgwxBrand {
+        flex-direction: row !important;
+        gap: 1px !important;
+        padding: 0 4px;
+    }
+    .brand-sg { font-size: 12px !important; }
+    .brand-wx { font-size: 9px !important; letter-spacing: 1px; }
+
+    /* Divider rotates to vertical */
+    .sidebarDivider {
+        width: 1px !important;
+        height: 32px !important;
+        margin: 0 2px !important;
+    }
+
+    /* Map fills full width; bottom clears the nav bar */
+    #map {
+        left: 0 !important;
+        width: 100% !important;
+        bottom: 60px !important;
+        top: 0 !important;
+    }
+
+    /* Product info bar sits just above the nav */
+    #productMapFooter {
+        left: 0 !important;
+        width: 100% !important;
+        bottom: 60px !important;
+    }
+
+    /* Alert ticker sits above the nav bar */
+    #sgwxTicker {
+        left: 0 !important;
+        bottom: 60px !important;
+    }
+
+    /* Info panel — keep top-right but compact */
+    #infoPanel {
+        right: 6px !important;
+        top: 6px !important;
+        min-width: 130px !important;
+        max-width: 170px !important;
+    }
+
+    /* Product selection menu — full width */
+    #productSelectionMenu {
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        max-height: 50vh !important;
+        border-radius: 12px 12px 0 0;
+        bottom: 60px !important;
+        top: auto !important;
+    }
+
+    /* Floating panels become full-width bottom sheets */
+    .sgwxPanel {
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 60px !important;
+        top: auto !important;
+        width: 100% !important;
+        max-height: 60vh;
+        border-radius: 12px 12px 0 0 !important;
+        resize: none !important;
+        overflow-y: auto;
+    }
+
+    /* Models panel gets more height for the iframe */
+    #sgwxModelsPanel {
+        height: 70vh !important;
+        max-height: 70vh !important;
+        min-width: unset !important;
+    }
+    #sgwxWindyFrame {
+        height: calc(70vh - 38px) !important;
+    }
+
+    /* Disable dragging visual affordance on mobile */
+    .sgwxPanelHeader {
+        cursor: default !important;
+    }
+
+    /* Tab bar wraps on very narrow screens */
+    .sgwxModelsTabBar {
+        flex-wrap: wrap;
+        gap: 3px;
+    }
 }
