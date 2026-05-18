@@ -286,6 +286,23 @@ window._sgwxAlertsInit = function() {
     _sgwxBuildTicker();
     setInterval(_sgwxBuildTicker, 30000);
 
+    // ── Layer visibility sync ─────────────────────────────────────────────
+    // The bundle shows/hides watches and discussions based on its own state
+    // machine. Sync our toggle states every few seconds so the layers stay
+    // in step with the panel controls even if the bundle's timing misses.
+    setInterval(function() {
+        var m = window._sgwxMap;
+        if (!m) return;
+        var showWatches = $('#sgwxAlertWatches').is(':checked');
+        var showDisc    = $('#sgwxAlertDiscussions').is(':checked');
+        ['watches_layer', 'watches_layer_fill'].forEach(function(id) {
+            if (m.getLayer(id)) m.setLayoutProperty(id, 'visibility', showWatches ? 'visible' : 'none');
+        });
+        ['discussions_layer', 'discussions_layer_fill'].forEach(function(id) {
+            if (m.getLayer(id)) m.setLayoutProperty(id, 'visibility', showDisc ? 'visible' : 'none');
+        });
+    }, 3000);
+
     // ── Sidebar alert button: open / close panel in sync with alerts toggle ──
     $('#alertMenuItemDiv').on('click', function() {
         // The bundle's icon-click handler has already fired by the time we get
