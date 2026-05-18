@@ -230,14 +230,15 @@ function _sgwxTickerScroll() {
 // Writes my panel's checkbox states to the bundle's hidden checkboxes and
 // fires the bundle's re-filter handler.
 function _sgwxSyncFilter() {
-    $('#armrWarningsBtnSwitchElem').prop('checked',    !$('#sgwxAlertWarnings').is(':checked'));
-    $('#armrWatchesBtnSwitchElem').prop('checked',     !$('#sgwxAlertWatches').is(':checked'));
-    $('#armrStatementsBtnSwitchElem').prop('checked',  !$('#sgwxAlertStatements').is(':checked'));
-    $('#armrDiscussionsBtnSwitchElem').prop('checked', !$('#sgwxAlertDiscussions').is(':checked'));
+    // Bundle positive logic: checked = show, unchecked = hide.
+    $('#armrWarningsBtnSwitchElem').prop('checked',    $('#sgwxAlertWarnings').is(':checked'));
+    $('#armrWatchesBtnSwitchElem').prop('checked',     $('#sgwxAlertWatches').is(':checked'));
+    $('#armrStatementsBtnSwitchElem').prop('checked',  $('#sgwxAlertStatements').is(':checked'));
+    $('#armrDiscussionsBtnSwitchElem').prop('checked', $('#sgwxAlertDiscussions').is(':checked'));
 
-    // Re-filter & re-plot via the bundle's handler on .alert_options_btn
+    // triggerHandler fires the bundle's click handler without toggling checkbox state.
     var $btn = $('.alert_options_btn');
-    if ($btn.length) $btn.first().trigger('click');
+    if ($btn.length) $btn.first().triggerHandler('click');
 
     // Watches and discussions visibility are managed outside filter_alerts.
     var m = window._sgwxMap;
@@ -255,10 +256,10 @@ function _sgwxSyncFilter() {
 
 // ── Initialise ────────────────────────────────────────────────────────────
 window._sgwxAlertsInit = function() {
-    // Bundle checkboxes mean "hide this type" when checked, so start unchecked = show all.
+    // Bundle positive logic: checked = show. Start all checked so everything shows by default.
     $('#armrWarningsBtnSwitchElem, #armrWatchesBtnSwitchElem, '  +
       '#armrStatementsBtnSwitchElem, #armrDiscussionsBtnSwitchElem')
-        .prop('checked', false);
+        .prop('checked', true);
 
     // Make the panel draggable / resizable via jQuery UI.
     $('#sgwxAlertsPanel')
