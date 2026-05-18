@@ -810,14 +810,27 @@
 
             <div class="sgwxSpcGroupLabel" style="margin-bottom:6px;">Vocal Alerts</div>
 
-            <label class="sgwxAlertToggleRow" style="margin-bottom:10px;">
+            <label class="sgwxAlertToggleRow" style="margin-bottom:8px;">
                 <span class="sgwxAlertToggleLabel">Speak new alerts</span>
                 <span class="sgwxAlertToggleHint">Uses browser text-to-speech</span>
                 <input type="checkbox" id="sgwxVocalAlertsOn" class="sgwxToggleCheck">
                 <span class="sgwxToggleSlider"></span>
             </label>
 
-            <button id="sgwxVocalTestBtn" class="sgwxVocalTestBtn">
+            <div class="sgwxVocalTypesLabel">Speak only these types:</div>
+            <div class="sgwxVocalTypeList">
+                <label class="sgwxVocalTypeRow"><input type="checkbox" id="sgwxVocalTornado"  class="sgwxVocalTypeCheck" checked><span class="sgwxVocalTypeName">Tornado Warning</span></label>
+                <label class="sgwxVocalTypeRow"><input type="checkbox" id="sgwxVocalTorWatch" class="sgwxVocalTypeCheck" checked><span class="sgwxVocalTypeName">Tornado Watch</span></label>
+                <label class="sgwxVocalTypeSVR">
+                    <label class="sgwxVocalTypeRow"><input type="checkbox" id="sgwxVocalSVR"      class="sgwxVocalTypeCheck" checked><span class="sgwxVocalTypeName">Svr T-Storm Warning</span></label>
+                    <label class="sgwxVocalTypeRow"><input type="checkbox" id="sgwxVocalSVRWatch" class="sgwxVocalTypeCheck" checked><span class="sgwxVocalTypeName">Svr T-Storm Watch</span></label>
+                </label>
+                <label class="sgwxVocalTypeRow"><input type="checkbox" id="sgwxVocalFFW"      class="sgwxVocalTypeCheck" checked><span class="sgwxVocalTypeName">Flash Flood Warning</span></label>
+                <label class="sgwxVocalTypeRow"><input type="checkbox" id="sgwxVocalWinter"   class="sgwxVocalTypeCheck" checked><span class="sgwxVocalTypeName">Winter Storm Warning</span></label>
+                <label class="sgwxVocalTypeRow"><input type="checkbox" id="sgwxVocalOthers"   class="sgwxVocalTypeCheck" checked><span class="sgwxVocalTypeName">All others</span></label>
+            </div>
+
+            <button id="sgwxVocalTestBtn" class="sgwxVocalTestBtn" style="margin-top:8px;">
                 <i class="fa fa-volume-high" style="margin-right:5px;"></i>Test Voice
             </button>
 

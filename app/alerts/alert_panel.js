@@ -111,6 +111,20 @@ function _sgwxAlertCategory(event) {
     return 'warning'; // default unrecognised alerts to warnings
 }
 
+function _sgwxMatchesVocalType(event) {
+    var e = (event || '').toLowerCase();
+    if (/tornado warning/i.test(event)             && $('#sgwxVocalTornado').is(':checked'))  return true;
+    if (/tornado watch/i.test(event)               && $('#sgwxVocalTorWatch').is(':checked')) return true;
+    if (/severe thunderstorm warning/i.test(event) && $('#sgwxVocalSVR').is(':checked'))      return true;
+    if (/severe thunderstorm watch/i.test(event)   && $('#sgwxVocalSVRWatch').is(':checked')) return true;
+    if (/flash flood warning/i.test(event)         && $('#sgwxVocalFFW').is(':checked'))      return true;
+    if (/winter storm warning/i.test(event)        && $('#sgwxVocalWinter').is(':checked'))   return true;
+    // "All others" catches anything not matched above.
+    var isSpecific = /tornado warning|tornado watch|severe thunderstorm warning|severe thunderstorm watch|flash flood warning|winter storm warning/i.test(event);
+    if (!isSpecific && $('#sgwxVocalOthers').is(':checked')) return true;
+    return false;
+}
+
 function _sgwxAnnounceNew() {
     if (!_sgwxVocalEnabled) return;
     var data = window.atticData && window.atticData.alerts_data;
@@ -132,6 +146,8 @@ function _sgwxAnnounceNew() {
         if (cat === 'watch'      && !wantWatches)     return;
         if (cat === 'statement'  && !wantStatements)  return;
         if (cat === 'discussion' && !wantDiscussions) return;
+
+        if (!_sgwxMatchesVocalType(p.event)) return;
 
         var area = (p.areaDesc || '').split(';')[0].split(',').slice(0, 3).join(',').trim();
         _sgwxAlarmThenSpeak('New ' + (p.event || 'alert') + ' for ' + (area || 'your area') + '.');

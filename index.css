@@ -2064,6 +2064,40 @@ td.day.active, span.month.active, span.year.active {
     transform: translateX(10px);
 }
 
+/* ── Vocal alert type filter ─────────────────────────────────────────── */
+.sgwxVocalTypesLabel {
+    font-size: 10px;
+    color: rgb(120, 120, 120);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+.sgwxVocalTypeList {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 2px;
+}
+.sgwxVocalTypeRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 2px 0;
+}
+.sgwxVocalTypeCheck {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    accent-color: rgb(92, 157, 255);
+    cursor: pointer;
+}
+.sgwxVocalTypeName {
+    font-size: 11px;
+    color: rgb(200, 200, 200);
+    user-select: none;
+}
+
 /* ── Weather Models Panel ─────────────────────────────────────────────── */
 #sgwxModelsPanel {
     min-width: 380px;
