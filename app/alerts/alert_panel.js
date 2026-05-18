@@ -6,6 +6,10 @@ var _sgwxVocalEnabled  = false;
 var _sgwxAnnouncedIds  = new Set();
 var _sgwxVocalInterval = null;
 
+// NWS watch layer fallback state
+var _sgwxWatchCache    = null; // { geojson, ts }
+var _sgwxWatchFetching = false;
+
 // Pre-load the alarm tone so it plays instantly without fetch latency.
 var _sgwxAlarmAudio = new Audio('./audley_fergine-warning-alarm-loop-1-279206.mp3');
 _sgwxAlarmAudio.preload = 'auto';
@@ -242,6 +246,125 @@ function _sgwxTickerScroll() {
     _sgwxTickerRaf = requestAnimationFrame(_sgwxTickerScroll);
 }
 
+// ── NWS watch layer (fallback for SPC KMZ) ───────────────────────────────
+function _sgwxWatchColor(event) {
+    var e = (event || '').toLowerCase();
+    if (/tornado/.test(e))             return '#ff0000';
+    if (/severe thunderstorm/.test(e)) return '#ffdd00';
+    if (/flash flood/.test(e))         return '#00cc44';
+    if (/winter/.test(e))              return '#4488ff';
+    return '#ff8800';
+}
+
+function _sgwxApplyWatchLayer(m, geojson, show) {
+    if (!m || !m.isStyleLoaded()) return;
+    var vis = show ? 'visible' : 'none';
+    var src = 'sgwx_nws_watches';
+    try {
+        if (m.getSource(src)) {
+            m.getSource(src).setData(geojson);
+        } else {
+            m.addSource(src, { type: 'geojson', data: geojson });
+            m.addLayer({
+                id: 'sgwx_nws_watches_fill', type: 'fill', source: src,
+                paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.15 }
+            });
+            m.addLayer({
+                id: 'sgwx_nws_watches_outline', type: 'line', source: src,
+                paint: { 'line-color': ['get', 'color'], 'line-width': 2, 'line-opacity': 0.85 }
+            });
+        }
+        if (m.getLayer('sgwx_nws_watches_fill'))
+            m.setLayoutProperty('sgwx_nws_watches_fill',    'visibility', vis);
+        if (m.getLayer('sgwx_nws_watches_outline'))
+            m.setLayoutProperty('sgwx_nws_watches_outline', 'visibility', vis);
+    } catch (err) {}
+}
+
+function _sgwxUpdateNwsWatches() {
+    var m = window._sgwxMap;
+    if (!m || !m.isStyleLoaded()) return;
+    var show = $('#sgwxAlertWatches').is(':checked');
+
+    // Serve cached data if < 60 s old
+    if (_sgwxWatchCache && (Date.now() - _sgwxWatchCache.ts < 60000)) {
+        _sgwxApplyWatchLayer(m, _sgwxWatchCache.geojson, show);
+        return;
+    }
+    if (_sgwxWatchFetching) return;
+
+    var data = window.atticData && window.atticData.alerts_data;
+    if (!data || !data.features) return;
+
+    var watches = data.features.filter(function(f) {
+        return /watch/i.test(f.properties.event);
+    });
+
+    if (watches.length === 0) {
+        var empty = { type: 'FeatureCollection', features: [] };
+        _sgwxWatchCache = { geojson: empty, ts: Date.now() };
+        _sgwxApplyWatchLayer(m, empty, show);
+        return;
+    }
+
+    // Try features that already carry a polygon
+    var withGeom = watches.filter(function(f) { return f.geometry !== null; });
+    if (withGeom.length > 0) {
+        var gj = {
+            type: 'FeatureCollection',
+            features: withGeom.map(function(f) {
+                return {
+                    type: 'Feature', geometry: f.geometry,
+                    properties: { event: f.properties.event, color: _sgwxWatchColor(f.properties.event) }
+                };
+            })
+        };
+        _sgwxWatchCache = { geojson: gj, ts: Date.now() };
+        _sgwxApplyWatchLayer(m, gj, show);
+        return;
+    }
+
+    // Build zone URL → event map, then fetch each zone's polygon
+    var zoneMap = {};
+    watches.forEach(function(w) {
+        var evt = w.properties.event;
+        (w.properties.affectedZones || []).forEach(function(url) {
+            if (!zoneMap[url]) zoneMap[url] = evt;
+        });
+    });
+    var entries = Object.keys(zoneMap).map(function(u) { return { url: u, event: zoneMap[u] }; });
+    if (entries.length === 0) return;
+    if (entries.length > 60) entries = entries.slice(0, 60); // safety cap
+
+    _sgwxWatchFetching = true;
+    var features = [];
+    var done = 0;
+    var total = entries.length;
+
+    entries.forEach(function(z) {
+        var finish = function() {
+            done++;
+            if (done < total) return;
+            _sgwxWatchFetching = false;
+            var gj2 = { type: 'FeatureCollection', features: features };
+            _sgwxWatchCache = { geojson: gj2, ts: Date.now() };
+            var mp = window._sgwxMap;
+            if (mp) _sgwxApplyWatchLayer(mp, gj2, $('#sgwxAlertWatches').is(':checked'));
+        };
+        fetch(z.url)
+            .then(function(r) { return r.json(); })
+            .then(function(zone) {
+                if (zone && zone.geometry) {
+                    features.push({
+                        type: 'Feature', geometry: zone.geometry,
+                        properties: { event: z.event, color: _sgwxWatchColor(z.event) }
+                    });
+                }
+                finish();
+            }, finish);
+    });
+}
+
 // ── Filter sync ───────────────────────────────────────────────────────────
 // Writes my panel's checkbox states to the bundle's hidden checkboxes and
 // fires the bundle's re-filter handler.
@@ -268,6 +391,7 @@ function _sgwxSyncFilter() {
             if (m.getLayer(id)) m.setLayoutProperty(id, 'visibility', showDisc ? 'visible' : 'none');
         });
     }
+    _sgwxUpdateNwsWatches();
 }
 
 // ── Initialise ────────────────────────────────────────────────────────────
@@ -295,12 +419,15 @@ window._sgwxAlertsInit = function() {
         if (!m) return;
         var showWatches = $('#sgwxAlertWatches').is(':checked');
         var showDisc    = $('#sgwxAlertDiscussions').is(':checked');
+        // Keep bundle's existing watch layers in sync (in case KMZ did load)
         ['watches_layer', 'watches_layer_fill'].forEach(function(id) {
             if (m.getLayer(id)) m.setLayoutProperty(id, 'visibility', showWatches ? 'visible' : 'none');
         });
         ['discussions_layer', 'discussions_layer_fill'].forEach(function(id) {
             if (m.getLayer(id)) m.setLayoutProperty(id, 'visibility', showDisc ? 'visible' : 'none');
         });
+        // NWS-based fallback watch layer
+        _sgwxUpdateNwsWatches();
     }, 3000);
 
     // ── Sidebar alert button: open / close panel in sync with alerts toggle ──
