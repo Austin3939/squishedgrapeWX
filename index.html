@@ -1064,25 +1064,16 @@
             })
         }
 
-        // SPC GeoJSON outlook files have CORS headers — strip corsproxy prefix and fetch directly.
-        // SPC KMZ/KML files (watch boxes) may lack CORS headers — route them through corsproxy.
+        // SPC NOAA has public CORS headers — strip corsproxy prefix and fetch all SPC URLs directly.
         (function() {
             var _origFetch = window.fetch;
             var proxyPrefix = 'https://corsproxy.io/?url=';
-            var spcGeoJsonBase = 'https://www.spc.noaa.gov/products/outlook/';
-            var spcKmzPattern  = /^https?:\/\/www\.spc\.noaa\.gov\/.*\.(kmz|kml)/i;
+            var directDomains = ['https://www.spc.noaa.gov/'];
             window.fetch = function(input, init) {
-                if (typeof input === 'string') {
-                    // Strip proxy for SPC GeoJSON outlooks (they support CORS directly).
-                    if (input.startsWith(proxyPrefix)) {
-                        var actual = input.slice(proxyPrefix.length);
-                        if (actual.startsWith(spcGeoJsonBase)) {
-                            return _origFetch(actual, init);
-                        }
-                    }
-                    // Route SPC KMZ/KML through corsproxy (binary watch boxes may lack CORS).
-                    if (spcKmzPattern.test(input)) {
-                        return _origFetch(proxyPrefix + encodeURIComponent(input), init);
+                if (typeof input === 'string' && input.startsWith(proxyPrefix)) {
+                    var actual = input.slice(proxyPrefix.length);
+                    if (directDomains.some(function(d) { return actual.startsWith(d); })) {
+                        return _origFetch(actual, init);
                     }
                 }
                 return _origFetch(input, init);
