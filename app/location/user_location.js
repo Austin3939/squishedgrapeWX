@@ -69,7 +69,7 @@ function _sgwxLocateStart() {
     }
 
     // Set button to loading state
-    var $btn = $('#sgwxLocateSidebarBtn span');
+    var $btn = $('#sgwxLocateBtn i');
     $btn.removeClass('fa-location-crosshairs').addClass('fa-spinner fa-spin');
 
     _sgwxLocateWatchId = navigator.geolocation.watchPosition(
@@ -85,8 +85,8 @@ function _sgwxLocateStart() {
                     window._sgwxMap.flyTo({ center: [lng, lat], zoom: 9, duration: 1500 });
                 }
                 // Update button to active state
-                $btn.removeClass('fa-spinner fa-spin').addClass('fa-location-crosshairs menu_item_selected');
-                $btn.closest('#sgwxLocateSidebarBtn').addClass('sgwxLocateActive');
+                $btn.removeClass('fa-spinner fa-spin').addClass('fa-location-crosshairs');
+                $('#sgwxLocateBtn').addClass('sgwxLocateActive');
             }
 
             _sgwxLocateUpdate(lat, lng, acc);
@@ -94,7 +94,7 @@ function _sgwxLocateStart() {
         function(err) {
             $btn.removeClass('fa-spinner fa-spin').addClass('fa-location-crosshairs');
             if (err.code === err.PERMISSION_DENIED) {
-                alert('Location access was denied. Please allow location in your browser settings and try again.');
+                alert('Location access was denied.\n\nIn Edge: click the lock icon in the address bar → Location → Allow, then try again.');
             }
         },
         { enableHighAccuracy: true, maximumAge: 10000, timeout: 30000 }
@@ -102,5 +102,5 @@ function _sgwxLocateStart() {
 }
 
 window._sgwxLocationInit = function() {
-    $('#sgwxLocateSidebarBtn').on('click', _sgwxLocateStart);
+    $('#sgwxLocateBtn').on('click', _sgwxLocateStart);
 };

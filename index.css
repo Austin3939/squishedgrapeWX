@@ -2133,6 +2133,32 @@ td.day.active, span.month.active, span.year.active {
     color: rgb(180, 210, 255);
 }
 
+/* ── User location button (bottom-right, matches Mapbox control style) ── */
+#sgwxLocateBtn {
+    position: absolute;
+    bottom: 110px;
+    right: 10px;
+    z-index: 500;
+    width: 36px;
+    height: 36px;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 15px;
+    color: #444;
+    transition: background 0.15s;
+}
+#sgwxLocateBtn:hover { background: #f0f0f0; }
+#sgwxLocateBtn.sgwxLocateActive { color: #4285f4; }
+
+@media (max-width: 768px) {
+    #sgwxLocateBtn { bottom: 74px; }
+}
+
 /* ── User location dot ───────────────────────────────────────────────── */
 .sgwx-user-dot {
     width: 18px;
