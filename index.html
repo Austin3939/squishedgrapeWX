@@ -1098,6 +1098,9 @@
             // Weather Models panel: Windy embed, defines _sgwxModelsInit
             ['js', './app/models/models_panel.js', 0],
 
+            // Live user location dot, defines _sgwxLocationInit
+            ['js', './app/location/user_location.js', 0],
+
             // https://cdnjs.com/libraries/font-awesome
             ['css', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css', 100782],
 
@@ -1163,9 +1166,10 @@
         ], () => {
             document.getElementById('bodyDiv').style.display = 'block';
             document.getElementById('loadingLibrariesDiv').style.display = 'none';
-            if (window._sgwxSpcInit)    window._sgwxSpcInit();
-            if (window._sgwxAlertsInit) window._sgwxAlertsInit();
-            if (window._sgwxModelsInit) window._sgwxModelsInit();
+            if (window._sgwxSpcInit)      window._sgwxSpcInit();
+            if (window._sgwxAlertsInit)   window._sgwxAlertsInit();
+            if (window._sgwxModelsInit)   window._sgwxModelsInit();
+            if (window._sgwxLocationInit) window._sgwxLocationInit();
 
             // Radar products button — position the menu flush below the info panel then open it.
             $('#infoPanelProductsBtn').on('click', function(e) {

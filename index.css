@@ -2249,4 +2249,9 @@ td.day.active, span.month.active, span.year.active {
         flex-wrap: wrap;
         gap: 3px;
     }
+
+    /* Lift the geolocate button above the bottom nav bar */
+    .mapboxgl-ctrl-bottom-right {
+        bottom: 68px !important;
+    }
 }
