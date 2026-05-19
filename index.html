@@ -141,6 +141,76 @@
         </div>
     </div>
 
+    <!-- ── Weather Dashboard ─────────────────────────────────────────────── -->
+    <div id="sgwxDashboard">
+        <div id="sgwxDashTopBar">
+            <div id="sgwxDashBrand">
+                <img src="logo.png" alt="">
+                SquishedGrape WX
+            </div>
+            <button id="sgwxDashRadarBtn">
+                <i class="fa fa-map"></i> Open Radar
+            </button>
+        </div>
+        <div id="sgwxDashScroll">
+            <div id="sgwxDashLoading">
+                <i class="fa fa-spinner fa-spin"></i>
+                <span>Getting your weather&hellip;</span>
+            </div>
+            <div id="sgwxDashContent">
+                <!-- Current conditions -->
+                <div id="sgwxDashCurrent">
+                    <div id="sgwxDashLocation">
+                        <i class="fa fa-location-dot"></i>
+                        <span id="sgwxDashLocationText">Locating&hellip;</span>
+                    </div>
+                    <i id="sgwxDashWeatherIcon" class="fa fa-sun"></i>
+                    <div id="sgwxDashTemp">--&deg;</div>
+                    <div id="sgwxDashConditionText">--</div>
+                    <div id="sgwxDashFeelsLike">Feels like --&deg;</div>
+                </div>
+
+                <!-- Details grid -->
+                <div id="sgwxDashDetails">
+                    <div class="sgwxDashDetailCard">
+                        <div class="sgwxDashDetailLabel"><i class="fa fa-wind"></i> Wind</div>
+                        <div class="sgwxDashDetailValue" id="sgwxDetailWind">--</div>
+                    </div>
+                    <div class="sgwxDashDetailCard">
+                        <div class="sgwxDashDetailLabel"><i class="fa fa-droplet"></i> Humidity</div>
+                        <div class="sgwxDashDetailValue" id="sgwxDetailHumidity">--</div>
+                    </div>
+                    <div class="sgwxDashDetailCard">
+                        <div class="sgwxDashDetailLabel"><i class="fa fa-sun"></i> UV Index</div>
+                        <div class="sgwxDashDetailValue" id="sgwxDetailUv">--</div>
+                    </div>
+                    <div class="sgwxDashDetailCard">
+                        <div class="sgwxDashDetailLabel"><i class="fa fa-eye"></i> Visibility</div>
+                        <div class="sgwxDashDetailValue" id="sgwxDetailVisibility">--</div>
+                    </div>
+                </div>
+
+                <!-- Active alerts -->
+                <div id="sgwxDashAlertsContainer"></div>
+
+                <!-- Hourly -->
+                <div class="sgwxDashSectionLabel">Hourly Forecast</div>
+                <div id="sgwxDashHourlyWrap">
+                    <div id="sgwxDashHourlyScroll"></div>
+                </div>
+
+                <!-- 7-day -->
+                <div class="sgwxDashSectionLabel">7-Day Forecast</div>
+                <div id="sgwxDashDailyList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back-to-dashboard button (visible over radar) -->
+    <button id="sgwxBackToDashBtn">
+        <i class="fa fa-arrow-left"></i> Weather
+    </button>
+
     <div id="bodyDiv">
 
     <div id="progress_bar_screen_background">
@@ -1102,6 +1172,9 @@
             // Live user location dot, defines _sgwxLocationInit
             ['js', './app/location/user_location.js', 0],
 
+            // Weather dashboard, defines _sgwxDashInit
+            ['js', './app/dashboard/dashboard.js', 0],
+
             // https://cdnjs.com/libraries/font-awesome
             ['css', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css', 100782],
 
@@ -1162,15 +1235,18 @@
             // ['js', './app/hurricanes/historical/stormList.js'],
 
             ['css', './index.css', 0],
+            ['css', './app/dashboard/dashboard.css', 0],
 
             ['js', './dist/bundle.js', 0],
         ], () => {
-            document.getElementById('bodyDiv').style.display = 'block';
             document.getElementById('loadingLibrariesDiv').style.display = 'none';
+            // Show dashboard first; radar is opened on demand
+            document.getElementById('sgwxDashboard').style.display = 'flex';
             if (window._sgwxSpcInit)      window._sgwxSpcInit();
             if (window._sgwxAlertsInit)   window._sgwxAlertsInit();
             if (window._sgwxModelsInit)   window._sgwxModelsInit();
             if (window._sgwxLocationInit) window._sgwxLocationInit();
+            if (window._sgwxDashInit)     window._sgwxDashInit();
 
             // Radar products button — position the menu flush below the info panel then open it.
             $('#infoPanelProductsBtn').on('click', function(e) {

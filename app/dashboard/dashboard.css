@@ -1,0 +1,353 @@
+/* ── SquishedGrape WX Dashboard ─────────────────────────────────────── */
+
+#sgwxDashboard {
+    position: fixed;
+    inset: 0;
+    background: #0d0f14;
+    color: #f0f2f8;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    display: none;
+    flex-direction: column;
+    z-index: 9000;
+    overflow: hidden;
+}
+
+/* ── Top bar ─────────────────────────────────────────────────────────── */
+#sgwxDashTopBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 10px;
+    flex-shrink: 0;
+}
+
+#sgwxDashBrand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #7eaaff;
+    letter-spacing: 0.2px;
+}
+#sgwxDashBrand img { height: 22px; border-radius: 4px; }
+
+#sgwxDashRadarBtn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: #1e3a6e;
+    color: #93c4ff;
+    border: 1px solid #2a4f96;
+    border-radius: 22px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+}
+#sgwxDashRadarBtn:hover {
+    background: #2a4f96;
+    color: #fff;
+}
+
+/* ── Scrollable body ─────────────────────────────────────────────────── */
+#sgwxDashScroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 4px 16px 32px;
+    scrollbar-width: thin;
+    scrollbar-color: #2a2d3a transparent;
+}
+#sgwxDashScroll::-webkit-scrollbar { width: 4px; }
+#sgwxDashScroll::-webkit-scrollbar-thumb { background: #2a2d3a; border-radius: 2px; }
+
+/* ── Loading state ───────────────────────────────────────────────────── */
+#sgwxDashLoading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 14px;
+    color: #4b5270;
+    font-size: 15px;
+}
+#sgwxDashLoading i { font-size: 28px; }
+
+/* ── Current conditions ──────────────────────────────────────────────── */
+#sgwxDashContent {
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+}
+
+#sgwxDashCurrent {
+    text-align: center;
+    padding: 16px 0 8px;
+}
+
+#sgwxDashLocation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 15px;
+    color: #8a90a8;
+    margin-bottom: 16px;
+}
+
+#sgwxDashWeatherIcon {
+    font-size: 68px;
+    line-height: 1;
+    display: block;
+    margin-bottom: 10px;
+    color: #f0c040;
+    filter: drop-shadow(0 0 18px rgba(240,192,64,0.25));
+}
+#sgwxDashWeatherIcon.fa-cloud-bolt,
+#sgwxDashWeatherIcon.fa-cloud-showers-heavy,
+#sgwxDashWeatherIcon.fa-cloud-rain { color: #7eaaff; filter: none; }
+#sgwxDashWeatherIcon.fa-snowflake  { color: #b0d8ff; filter: none; }
+#sgwxDashWeatherIcon.fa-smog       { color: #8a90a8; filter: none; }
+#sgwxDashWeatherIcon.fa-cloud      { color: #9ca3af; filter: none; }
+#sgwxDashWeatherIcon.fa-cloud-sun,
+#sgwxDashWeatherIcon.fa-cloud-moon { color: #c8d4f0; filter: none; }
+#sgwxDashWeatherIcon.fa-moon       { color: #d4ceff; filter: drop-shadow(0 0 12px rgba(212,206,255,0.3)); }
+
+#sgwxDashTemp {
+    font-size: 80px;
+    font-weight: 100;
+    line-height: 1;
+    letter-spacing: -2px;
+    margin-bottom: 4px;
+}
+
+#sgwxDashConditionText {
+    font-size: 19px;
+    color: #c8cfe0;
+    margin-bottom: 6px;
+    font-weight: 400;
+}
+
+#sgwxDashFeelsLike {
+    font-size: 14px;
+    color: #6b7494;
+}
+
+/* ── Details grid ────────────────────────────────────────────────────── */
+#sgwxDashDetails {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.sgwxDashDetailCard {
+    background: #161922;
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sgwxDashDetailLabel {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #4b5270;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.sgwxDashDetailLabel i { font-size: 11px; color: #5a7ccc; }
+
+.sgwxDashDetailValue {
+    font-size: 22px;
+    font-weight: 500;
+    color: #e8ecf8;
+    line-height: 1;
+}
+
+.sgwxDashDetailSub {
+    font-size: 12px;
+    color: #4b5270;
+}
+
+/* ── Active alerts ───────────────────────────────────────────────────── */
+#sgwxDashAlertsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sgwxDashAlert {
+    background: #1e1408;
+    border-left: 4px solid #e07820;
+    border-radius: 0 12px 12px 0;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.sgwxDashAlert-warning  { border-left-color: #e07820; background: #1e1408; }
+.sgwxDashAlert-watch    { border-left-color: #e0c020; background: #1e1c08; }
+.sgwxDashAlert-tornado  { border-left-color: #e03030; background: #1e0808; }
+
+.sgwxDashAlertTitle {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.sgwxDashAlertArea {
+    font-size: 12px;
+    color: #7a7060;
+    padding-left: 2px;
+}
+
+/* ── Section label ───────────────────────────────────────────────────── */
+.sgwxDashSectionLabel {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #3d4260;
+    padding-left: 2px;
+    margin-top: 4px;
+    margin-bottom: -4px;
+}
+
+/* ── Hourly strip ────────────────────────────────────────────────────── */
+#sgwxDashHourlyWrap {
+    background: #161922;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+#sgwxDashHourlyScroll {
+    display: flex;
+    overflow-x: auto;
+    gap: 4px;
+    padding: 16px 14px;
+    scrollbar-width: none;
+}
+#sgwxDashHourlyScroll::-webkit-scrollbar { display: none; }
+
+.sgwxDashHourItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+    min-width: 54px;
+    padding: 4px 0;
+}
+
+.sgwxDashHourItem.sgwxDashHourNow {
+    background: rgba(126, 170, 255, 0.08);
+    border-radius: 12px;
+}
+
+.sgwxDashHourTime {
+    font-size: 12px;
+    color: #5a6080;
+    font-weight: 500;
+}
+.sgwxDashHourItem.sgwxDashHourNow .sgwxDashHourTime { color: #7eaaff; }
+
+.sgwxDashHourIcon { font-size: 20px; color: #c8cfe0; }
+
+.sgwxDashHourTemp {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.sgwxDashHourPop {
+    font-size: 11px;
+    color: #5a9aee;
+    min-height: 14px;
+}
+
+/* ── Daily forecast ──────────────────────────────────────────────────── */
+#sgwxDashDailyList {
+    background: #161922;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.sgwxDashDayRow {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    gap: 12px;
+    border-bottom: 1px solid #1e2232;
+}
+.sgwxDashDayRow:last-child { border-bottom: none; }
+
+.sgwxDashDayName {
+    font-size: 15px;
+    font-weight: 500;
+    width: 46px;
+    flex-shrink: 0;
+    color: #c8cfe0;
+}
+
+.sgwxDashDayIcon {
+    font-size: 20px;
+    width: 28px;
+    text-align: center;
+    flex-shrink: 0;
+    color: #c8cfe0;
+}
+
+.sgwxDashDayPop {
+    font-size: 12px;
+    color: #4a7acc;
+    flex: 1;
+}
+
+.sgwxDashDayTemps {
+    font-size: 15px;
+    white-space: nowrap;
+}
+.sgwxDashDayHigh { font-weight: 600; color: #e8ecf8; }
+.sgwxDashDayLow  { color: #4b5270; }
+
+/* ── Back to dashboard button (shown over radar) ─────────────────────── */
+#sgwxBackToDashBtn {
+    display: none;
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 8999;
+    align-items: center;
+    gap: 7px;
+    background: rgba(14, 17, 24, 0.92);
+    color: #93c4ff;
+    border: 1px solid #2a4f96;
+    border-radius: 22px;
+    padding: 9px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: background 0.15s;
+}
+#sgwxBackToDashBtn:hover { background: rgba(30, 58, 110, 0.95); }
+
+/* ── Mobile tweaks ───────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    #sgwxDashTopBar  { padding: 14px 14px 8px; }
+    #sgwxDashScroll  { padding: 4px 12px 100px; }
+    #sgwxDashTemp    { font-size: 66px; }
+    #sgwxDashWeatherIcon { font-size: 56px; }
+
+    #sgwxBackToDashBtn { top: 10px; left: 10px; padding: 8px 14px; font-size: 13px; }
+}
