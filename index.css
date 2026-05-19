@@ -2133,6 +2133,24 @@ td.day.active, span.month.active, span.year.active {
     color: rgb(180, 210, 255);
 }
 
+/* ── User location dot ───────────────────────────────────────────────── */
+.sgwx-user-dot {
+    width: 18px;
+    height: 18px;
+    background: #4285f4;
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    animation: sgwx-pulse 2s ease-out infinite;
+    cursor: default;
+}
+
+@keyframes sgwx-pulse {
+    0%   { box-shadow: 0 0 0 0   rgba(66,133,244,0.6), 0 1px 4px rgba(0,0,0,0.5); }
+    70%  { box-shadow: 0 0 0 16px rgba(66,133,244,0),  0 1px 4px rgba(0,0,0,0.5); }
+    100% { box-shadow: 0 0 0 0   rgba(66,133,244,0),  0 1px 4px rgba(0,0,0,0.5); }
+}
+
 /* ── Mobile / Phone Layout (≤ 768 px) ────────────────────────────────── */
 @media (max-width: 768px) {
 
