@@ -1,16 +1,20 @@
 // Alerts settings panel — loaded before the bundle, initialised after it.
-// Provides per-category filter toggles and a vocal-alert (TTS) feature.
+// Provides per-category filter toggles, vocal alerts, accordion list, and toast popups.
 
 // ── State ─────────────────────────────────────────────────────────────────
-var _sgwxVocalEnabled  = false;
-var _sgwxAnnouncedIds  = new Set();
-var _sgwxVocalInterval = null;
+var _sgwxVocalEnabled = false;
+var _sgwxAnnouncedIds = new Set();
+var _sgwxSeedDone     = false; // true once we've silently seeded existing alerts
 
 // NWS watch layer fallback state
-var _sgwxWatchCache    = null; // { geojson, ts }
+var _sgwxWatchCache    = null;
 var _sgwxWatchFetching = false;
 
-// Pre-load the alarm tone so it plays instantly without fetch latency.
+// Toast queue
+var _sgwxToastQueue   = [];
+var _sgwxToastBusy    = false;
+
+// Pre-load the alarm tone.
 var _sgwxAlarmAudio = new Audio('./audley_fergine-warning-alarm-loop-1-279206.mp3');
 _sgwxAlarmAudio.preload = 'auto';
 
@@ -21,23 +25,14 @@ function _sgwxLoadVoice() {
     if (!window.speechSynthesis) return;
     var voices = window.speechSynthesis.getVoices();
     if (!voices.length) return;
-
-    // Neural/natural voices first — these sound human. Robotic offline voices last.
     var preferred = [
-        // Microsoft neural voices (Edge / Win 11) — best quality
         'Microsoft Aria Online (Natural) - English (United States)',
         'Microsoft Jenny Online (Natural) - English (United States)',
         'Microsoft Ana Online (Natural) - English (United States)',
         'Microsoft Emma Online (Natural) - English (United States)',
         'Microsoft Jane Online (Natural) - English (United Kingdom)',
-        // Google neural (Chrome)
         'Google UK English Female',
-        // macOS natural voices
-        'Samantha',
-        'Karen',
-        'Victoria',
-        'Fiona',
-        // Offline fallbacks
+        'Samantha', 'Karen', 'Victoria', 'Fiona',
         'Microsoft Zira Desktop - English (United States)',
         'Microsoft Zira - English (United States)',
         'Microsoft Zira',
@@ -47,17 +42,10 @@ function _sgwxLoadVoice() {
         var match = voices.filter(function(v) { return v.name === preferred[i]; })[0];
         if (match) { _sgwxFemaleVoice = match; return; }
     }
-    // Fallback: any online/natural English voice (neural voices contain "Online" or "Natural")
-    var neural = voices.filter(function(v) {
-        return /online|natural/i.test(v.name) && /en/i.test(v.lang);
-    })[0];
+    var neural = voices.filter(function(v) { return /online|natural/i.test(v.name) && /en/i.test(v.lang); })[0];
     if (neural) { _sgwxFemaleVoice = neural; return; }
-    // Any English female voice
-    var female = voices.filter(function(v) {
-        return /female/i.test(v.name) && /en/i.test(v.lang);
-    })[0];
+    var female = voices.filter(function(v) { return /female/i.test(v.name) && /en/i.test(v.lang); })[0];
     if (female) { _sgwxFemaleVoice = female; return; }
-    // Last resort: any English voice
     _sgwxFemaleVoice = voices.filter(function(v) { return /en[-_]/i.test(v.lang); })[0] || voices[0] || null;
 }
 
@@ -66,28 +54,20 @@ if (window.speechSynthesis) {
     window.speechSynthesis.addEventListener('voiceschanged', _sgwxLoadVoice);
 }
 
-// ── Text-to-speech helpers ────────────────────────────────────────────────
+// ── TTS helpers ───────────────────────────────────────────────────────────
 function _sgwxSpeak(text) {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     var utt = new SpeechSynthesisUtterance(text);
-    utt.rate   = 1.1;
-    utt.pitch  = 1.0;
-    utt.volume = 1;
+    utt.rate = 1.1; utt.pitch = 1.0; utt.volume = 1;
     if (_sgwxFemaleVoice) utt.voice = _sgwxFemaleVoice;
     window.speechSynthesis.speak(utt);
 }
 
-// Play the alarm for ~3 beeps (~2.1 seconds), then speak the alert text.
 function _sgwxAlarmThenSpeak(text) {
-    // Ensure voices are loaded before we need them.
     _sgwxLoadVoice();
-
-    // Reset and play from the start each time.
     _sgwxAlarmAudio.currentTime = 0;
     var playPromise = _sgwxAlarmAudio.play();
-
-    // play() returns a Promise in modern browsers; guard against autoplay blocks.
     var doSpeak = function() {
         setTimeout(function() {
             _sgwxAlarmAudio.pause();
@@ -95,44 +75,123 @@ function _sgwxAlarmThenSpeak(text) {
             _sgwxSpeak(text);
         }, 2100);
     };
-
     if (playPromise && typeof playPromise.then === 'function') {
-        playPromise.then(doSpeak).catch(function() {
-            // Autoplay blocked — skip alarm and speak directly.
-            _sgwxSpeak(text);
-        });
-    } else {
-        doSpeak();
-    }
+        playPromise.then(doSpeak).catch(function() { _sgwxSpeak(text); });
+    } else { doSpeak(); }
 }
 
+// ── Alert category helper ─────────────────────────────────────────────────
 function _sgwxAlertCategory(event) {
     var e = (event || '').toLowerCase();
-    if (/watch/.test(e))                          return 'watch';
-    if (/warning/.test(e))                        return 'warning';
-    if (/discussion|mesoscale/.test(e))           return 'discussion';
-    if (/statement|advisory|outlook/.test(e))     return 'statement';
-    return 'warning'; // default unrecognised alerts to warnings
+    if (/watch/.test(e))                        return 'watch';
+    if (/warning/.test(e))                      return 'warning';
+    if (/discussion|mesoscale/.test(e))         return 'discussion';
+    if (/statement|advisory|outlook/.test(e))   return 'statement';
+    return 'warning';
 }
 
+// ── Vocal type filter ─────────────────────────────────────────────────────
 function _sgwxMatchesVocalType(event) {
-    var e = (event || '').toLowerCase();
     if (/tornado warning/i.test(event)             && $('#sgwxVocalTornado').is(':checked'))  return true;
     if (/tornado watch/i.test(event)               && $('#sgwxVocalTorWatch').is(':checked')) return true;
     if (/severe thunderstorm warning/i.test(event) && $('#sgwxVocalSVR').is(':checked'))      return true;
     if (/severe thunderstorm watch/i.test(event)   && $('#sgwxVocalSVRWatch').is(':checked')) return true;
     if (/flash flood warning/i.test(event)         && $('#sgwxVocalFFW').is(':checked'))      return true;
     if (/winter storm warning/i.test(event)        && $('#sgwxVocalWinter').is(':checked'))   return true;
-    // "All others" catches anything not matched above.
     var isSpecific = /tornado warning|tornado watch|severe thunderstorm warning|severe thunderstorm watch|flash flood warning|winter storm warning/i.test(event);
     if (!isSpecific && $('#sgwxVocalOthers').is(':checked')) return true;
     return false;
 }
 
-function _sgwxAnnounceNew() {
-    if (!_sgwxVocalEnabled) return;
+// ── Toast popup ───────────────────────────────────────────────────────────
+var _sgwxToastTimer = null;
+
+function _sgwxToastColor(cat) {
+    if (cat === 'warning')   return { border: '#e83030', bg: '#1a0606' };
+    if (cat === 'watch')     return { border: '#e8c030', bg: '#1a1606' };
+    if (cat === 'statement') return { border: '#3080e8', bg: '#06101a' };
+    return                          { border: '#606080', bg: '#10101a' };
+}
+
+function _sgwxFmtExpires(isoStr) {
+    if (!isoStr) return null;
+    var d = new Date(isoStr);
+    var h = d.getHours(), m = d.getMinutes();
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+}
+
+// Takes the full NWS feature object — called only when the alert is brand new.
+function _sgwxShowToast(feature) {
+    _sgwxToastQueue.push(feature);
+    if (!_sgwxToastBusy) _sgwxNextToast();
+}
+
+function _sgwxNextToast() {
+    if (!_sgwxToastQueue.length) { _sgwxToastBusy = false; return; }
+    _sgwxToastBusy = true;
+    var f  = _sgwxToastQueue.shift();
+    var p  = f.properties || {};
+    var el = document.getElementById('sgwxAlertToast');
+    if (!el) { _sgwxToastBusy = false; return; }
+
+    var cat     = _sgwxAlertCategory(p.event);
+    var cl      = _sgwxToastColor(cat);
+    var area    = (p.areaDesc || '').replace(/;/g, '; ');
+    var expires = _sgwxFmtExpires(p.expires);
+    var sender  = (p.senderName || '').replace(/^National Weather Service\s*/i, 'NWS ');
+    var headline = (p.headline || '').replace(/ issued.*$/i, '').trim();
+    if (!headline && p.description) {
+        headline = p.description.split('\n').filter(function(l) { return l.trim(); })[0] || '';
+    }
+    if (headline.length > 140) headline = headline.slice(0, 137) + '…';
+
+    var metaParts = [];
+    if (expires) metaParts.push('Until ' + expires);
+    if (sender)  metaParts.push(sender);
+
+    document.getElementById('sgwxToastInner').innerHTML =
+        '<div class="sgwxToastEvent">' + (p.event || 'Alert') + '</div>' +
+        (area     ? '<div class="sgwxToastArea">'     + area     + '</div>' : '') +
+        (metaParts.length ? '<div class="sgwxToastMeta">' + metaParts.join(' &middot; ') + '</div>' : '') +
+        (headline ? '<div class="sgwxToastHeadline">' + headline + '</div>' : '') +
+        '<button class="sgwxToastViewBtn" onclick="window._sgwxOpenAlertsList()">&#xf024; View All Alerts</button>';
+
+    el.style.borderLeftColor = cl.border;
+    el.style.background      = cl.bg;
+    el.classList.add('sgwxToastVisible');
+
+    if (_sgwxToastTimer) clearTimeout(_sgwxToastTimer);
+    _sgwxToastTimer = setTimeout(_sgwxDismissToast, 8000);
+
+    document.getElementById('sgwxToastClose').onclick = function() {
+        clearTimeout(_sgwxToastTimer);
+        _sgwxDismissToast();
+    };
+}
+
+function _sgwxDismissToast() {
+    var el = document.getElementById('sgwxAlertToast');
+    if (!el) return;
+    el.classList.remove('sgwxToastVisible');
+    setTimeout(_sgwxNextToast, 350);
+}
+
+// ── New-alert detection ───────────────────────────────────────────────────
+function _sgwxCheckNewAlerts() {
     var data = window.atticData && window.atticData.alerts_data;
-    if (!data || !data.features) return;
+    if (!data || !data.features || !data.features.length) return;
+
+    // First time we find real data: seed silently, never toast existing alerts.
+    if (!_sgwxSeedDone) {
+        _sgwxSeedDone = true;
+        data.features.forEach(function(f) {
+            var p = f.properties;
+            _sgwxAnnouncedIds.add(p.id || (p.event + '_' + p.areaDesc));
+        });
+        return;
+    }
 
     var wantWarnings    = $('#sgwxAlertWarnings').is(':checked');
     var wantWatches     = $('#sgwxAlertWatches').is(':checked');
@@ -140,111 +199,100 @@ function _sgwxAnnounceNew() {
     var wantDiscussions = $('#sgwxAlertDiscussions').is(':checked');
 
     data.features.forEach(function(f) {
-        var p   = f.properties;
-        var id  = p.id || (p.event + '_' + p.areaDesc);
+        var p  = f.properties;
+        var id = p.id || (p.event + '_' + p.areaDesc);
         if (_sgwxAnnouncedIds.has(id)) return;
         _sgwxAnnouncedIds.add(id);
 
+        // Show toast with full feature info
+        _sgwxShowToast(f);
+
+        // Refresh accordion if already open
+        if ($('#sgwxAlertsListPanel').is(':visible')) _sgwxBuildAlertsList();
+
+        // Vocal — only if enabled and category/type match
+        if (!_sgwxVocalEnabled) return;
         var cat = _sgwxAlertCategory(p.event);
         if (cat === 'warning'    && !wantWarnings)    return;
         if (cat === 'watch'      && !wantWatches)     return;
         if (cat === 'statement'  && !wantStatements)  return;
         if (cat === 'discussion' && !wantDiscussions) return;
-
         if (!_sgwxMatchesVocalType(p.event)) return;
-
         var area = (p.areaDesc || '').split(';')[0].split(',').slice(0, 3).join(',').trim();
         _sgwxAlarmThenSpeak('New ' + (p.event || 'alert') + ' for ' + (area || 'your area') + '.');
     });
 }
 
-// ── Alert ticker ──────────────────────────────────────────────────────────
-var _sgwxTickerRaf      = null;
-var _sgwxTickerPos      = 0;
-var _sgwxTickerLastHash = '';
-var _sgwxTickerCatOrder = { warning: 0, watch: 1, advisory: 2 };
+// ── Accordion alerts list ─────────────────────────────────────────────────
+function _sgwxBuildAlertsList() {
+    var body = document.getElementById('sgwxAlertsListBody');
+    if (!body) return;
+    var data     = window.atticData && window.atticData.alerts_data;
+    var features = (data && data.features) || [];
 
-function _sgwxTickerCategory(event) {
-    var e = (event || '').toLowerCase();
-    if (/watch/.test(e))   return 'watch';
-    if (/warning/.test(e)) return 'warning';
-    return 'advisory';
-}
-
-function _sgwxBuildTicker() {
-    var data   = window.atticData && window.atticData.alerts_data;
-    var ticker = document.getElementById('sgwxTicker');
-    var track  = document.getElementById('sgwxTickerTrack');
-    if (!ticker || !track) return;
-
-    if (!data || !data.features || !data.features.length) {
-        ticker.style.display = 'none';
-        if (_sgwxTickerRaf) { cancelAnimationFrame(_sgwxTickerRaf); _sgwxTickerRaf = null; }
-        _sgwxTickerLastHash = '';
-        return;
-    }
-
-    // Only rebuild when the alert set actually changes.
-    var hash = data.features.map(function(f) {
-        return f.properties.id || (f.properties.event + '_' + f.properties.areaDesc);
-    }).join('|');
-    if (hash === _sgwxTickerLastHash) return;
-    _sgwxTickerLastHash = hash;
-
-    // Group: warnings first, then watches, then advisories.
-    var sorted = data.features.slice().sort(function(a, b) {
-        var oa = _sgwxTickerCatOrder[_sgwxTickerCategory(a.properties.event)] || 0;
-        var ob = _sgwxTickerCatOrder[_sgwxTickerCategory(b.properties.event)] || 0;
-        return oa - ob;
+    var groups = { warning: [], watch: [], statement: [], discussion: [] };
+    features.forEach(function(f) {
+        var cat = _sgwxAlertCategory(f.properties.event);
+        if (groups[cat]) groups[cat].push(f);
     });
 
-    var html = '';
-    sorted.forEach(function(f) {
-        var p    = f.properties;
-        var evt  = p.event || 'Alert';
-        var area = (p.areaDesc || '').split(';')[0].split(',').slice(0, 2).join(',').trim();
-        var cat  = _sgwxTickerCategory(evt);
-        var cls  = cat === 'warning' ? 'sgwxTickerWarn' :
-                   cat === 'watch'   ? 'sgwxTickerWatch' : 'sgwxTickerAdvisory';
-        var icon = cat === 'warning' ? 'fa-triangle-exclamation' :
-                   cat === 'watch'   ? 'fa-eye' : 'fa-circle-info';
-        html += '<span class="sgwxTickerItem ' + cls + '">' +
-                '<i class="fa ' + icon + '"></i>' +
-                evt + (area ? ' — ' + area : '') +
-                '</span>';
+    var sections = [
+        { key: 'warning',    label: 'Warnings',    icon: 'fa-triangle-exclamation', color: '#e83030' },
+        { key: 'watch',      label: 'Watches',      icon: 'fa-eye',                  color: '#e8c030' },
+        { key: 'statement',  label: 'Statements',   icon: 'fa-circle-info',          color: '#3080e8' },
+        { key: 'discussion', label: 'Discussions',  icon: 'fa-comment',              color: '#8080a0' }
+    ];
+
+    body.innerHTML = sections.map(function(s) {
+        var items = groups[s.key];
+        var count = items.length;
+
+        var rows = items.map(function(f) {
+            var p       = f.properties;
+            var area    = (p.areaDesc || '').replace(/;/g, '; ');
+            var expires = _sgwxFmtExpires(p.expires);
+            var sender  = (p.senderName || '').replace(/^National Weather Service\s*/i, 'NWS ');
+            var headline = (p.headline || '').replace(/ issued.*$/i, '').trim();
+            if (!headline && p.description) {
+                headline = p.description.split('\n').filter(function(l) { return l.trim(); })[0] || '';
+            }
+            if (headline.length > 160) headline = headline.slice(0, 157) + '…';
+
+            return '<div class="sgwxAccordionItem">' +
+                '<div class="sgwxAccordionItemTitle">' + (p.event || 'Alert') + '</div>' +
+                (area ? '<div class="sgwxAccordionItemArea">' + area + '</div>' : '') +
+                ((expires || sender) ? '<div class="sgwxAccordionItemMeta">' +
+                    (expires ? 'Until ' + expires : '') +
+                    (expires && sender ? ' &middot; ' : '') +
+                    (sender || '') + '</div>' : '') +
+                (headline ? '<div class="sgwxAccordionItemHeadline">' + headline + '</div>' : '') +
+                '</div>';
+        }).join('');
+
+        return '<div class="sgwxAccordionSection" data-open="' + (count > 0) + '">' +
+            '<div class="sgwxAccordionHeader">' +
+                '<span><i class="fa ' + s.icon + '" style="color:' + s.color + '"></i> ' + s.label + '</span>' +
+                '<span class="sgwxAccordionCount' + (count ? ' sgwxAccordionCountBadge" style="background:' + s.color + '"' : '"') + '>' + count + '</span>' +
+            '</div>' +
+            '<div class="sgwxAccordionBody">' +
+                (count ? rows : '<div class="sgwxAccordionEmpty">No active ' + s.label.toLowerCase() + '</div>') +
+            '</div></div>';
+    }).join('');
+
+    body.querySelectorAll('.sgwxAccordionHeader').forEach(function(h) {
+        h.addEventListener('click', function() {
+            var sec = this.closest('.sgwxAccordionSection');
+            sec.setAttribute('data-open', sec.getAttribute('data-open') === 'true' ? 'false' : 'true');
+        });
     });
-
-    track.innerHTML = html;
-    ticker.style.display = 'flex';
-
-    // Stop current loop and restart from the right edge.
-    if (_sgwxTickerRaf) { cancelAnimationFrame(_sgwxTickerRaf); _sgwxTickerRaf = null; }
-    _sgwxTickerPos = ticker.offsetWidth;
-    _sgwxTickerScroll();
 }
 
-function _sgwxTickerScroll() {
-    var ticker = document.getElementById('sgwxTicker');
-    var track  = document.getElementById('sgwxTickerTrack');
-    if (!ticker || !track) { _sgwxTickerRaf = null; return; }
-
-    // Read scrollWidth live every frame — skips frames before layout is ready.
-    var contentWidth = track.scrollWidth;
-    if (contentWidth === 0) {
-        _sgwxTickerRaf = requestAnimationFrame(_sgwxTickerScroll);
-        return;
-    }
-
-    _sgwxTickerPos -= 1.2;
-
-    // Only reset once the very last item has fully cleared the left edge.
-    if (_sgwxTickerPos < -contentWidth) {
-        _sgwxTickerPos = ticker.offsetWidth;
-    }
-
-    track.style.transform = 'translateX(' + _sgwxTickerPos + 'px)';
-    _sgwxTickerRaf = requestAnimationFrame(_sgwxTickerScroll);
+function _sgwxOpenAlertsList() {
+    _sgwxBuildAlertsList();
+    $('#sgwxAlertsListPanel').show();
+    $('#sgwxAlertsListBtn span').removeClass('icon-grey menu_item_not_selected').addClass('menu_item_selected');
 }
+window._sgwxOpenAlertsList = _sgwxOpenAlertsList;
 
 // ── NWS watch layer (fallback for SPC KMZ) ───────────────────────────────
 function _sgwxWatchColor(event) {
@@ -265,14 +313,10 @@ function _sgwxApplyWatchLayer(m, geojson, show) {
             m.getSource(src).setData(geojson);
         } else {
             m.addSource(src, { type: 'geojson', data: geojson });
-            m.addLayer({
-                id: 'sgwx_nws_watches_fill', type: 'fill', source: src,
-                paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.15 }
-            });
-            m.addLayer({
-                id: 'sgwx_nws_watches_outline', type: 'line', source: src,
-                paint: { 'line-color': ['get', 'color'], 'line-width': 2, 'line-opacity': 0.85 }
-            });
+            m.addLayer({ id: 'sgwx_nws_watches_fill', type: 'fill', source: src,
+                paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.15 } });
+            m.addLayer({ id: 'sgwx_nws_watches_outline', type: 'line', source: src,
+                paint: { 'line-color': ['get', 'color'], 'line-width': 2, 'line-opacity': 0.85 } });
         }
         if (m.getLayer('sgwx_nws_watches_fill'))
             m.setLayoutProperty('sgwx_nws_watches_fill',    'visibility', vis);
@@ -286,7 +330,6 @@ function _sgwxUpdateNwsWatches() {
     if (!m || !m.isStyleLoaded()) return;
     var show = $('#sgwxAlertWatches').is(':checked');
 
-    // Serve cached data if < 60 s old
     if (_sgwxWatchCache && (Date.now() - _sgwxWatchCache.ts < 60000)) {
         _sgwxApplyWatchLayer(m, _sgwxWatchCache.geojson, show);
         return;
@@ -296,9 +339,7 @@ function _sgwxUpdateNwsWatches() {
     var data = window.atticData && window.atticData.alerts_data;
     if (!data || !data.features) return;
 
-    var watches = data.features.filter(function(f) {
-        return /watch/i.test(f.properties.event);
-    });
+    var watches = data.features.filter(function(f) { return /watch/i.test(f.properties.event); });
 
     if (watches.length === 0) {
         var empty = { type: 'FeatureCollection', features: [] };
@@ -307,39 +348,29 @@ function _sgwxUpdateNwsWatches() {
         return;
     }
 
-    // Try features that already carry a polygon
     var withGeom = watches.filter(function(f) { return f.geometry !== null; });
     if (withGeom.length > 0) {
-        var gj = {
-            type: 'FeatureCollection',
-            features: withGeom.map(function(f) {
-                return {
-                    type: 'Feature', geometry: f.geometry,
-                    properties: { event: f.properties.event, color: _sgwxWatchColor(f.properties.event) }
-                };
-            })
-        };
+        var gj = { type: 'FeatureCollection', features: withGeom.map(function(f) {
+            return { type: 'Feature', geometry: f.geometry,
+                properties: { event: f.properties.event, color: _sgwxWatchColor(f.properties.event) } };
+        })};
         _sgwxWatchCache = { geojson: gj, ts: Date.now() };
         _sgwxApplyWatchLayer(m, gj, show);
         return;
     }
 
-    // Build zone URL → event map, then fetch each zone's polygon
     var zoneMap = {};
     watches.forEach(function(w) {
-        var evt = w.properties.event;
         (w.properties.affectedZones || []).forEach(function(url) {
-            if (!zoneMap[url]) zoneMap[url] = evt;
+            if (!zoneMap[url]) zoneMap[url] = w.properties.event;
         });
     });
     var entries = Object.keys(zoneMap).map(function(u) { return { url: u, event: zoneMap[u] }; });
-    if (entries.length === 0) return;
-    if (entries.length > 60) entries = entries.slice(0, 60); // safety cap
+    if (!entries.length) return;
+    if (entries.length > 60) entries = entries.slice(0, 60);
 
     _sgwxWatchFetching = true;
-    var features = [];
-    var done = 0;
-    var total = entries.length;
+    var features = [], done = 0, total = entries.length;
 
     entries.forEach(function(z) {
         var finish = function() {
@@ -354,32 +385,24 @@ function _sgwxUpdateNwsWatches() {
         fetch(z.url)
             .then(function(r) { return r.json(); })
             .then(function(zone) {
-                if (zone && zone.geometry) {
-                    features.push({
-                        type: 'Feature', geometry: zone.geometry,
-                        properties: { event: z.event, color: _sgwxWatchColor(z.event) }
-                    });
-                }
+                if (zone && zone.geometry)
+                    features.push({ type: 'Feature', geometry: zone.geometry,
+                        properties: { event: z.event, color: _sgwxWatchColor(z.event) } });
                 finish();
             }, finish);
     });
 }
 
 // ── Filter sync ───────────────────────────────────────────────────────────
-// Writes my panel's checkbox states to the bundle's hidden checkboxes and
-// fires the bundle's re-filter handler.
 function _sgwxSyncFilter() {
-    // Bundle positive logic: checked = show, unchecked = hide.
     $('#armrWarningsBtnSwitchElem').prop('checked',    $('#sgwxAlertWarnings').is(':checked'));
     $('#armrWatchesBtnSwitchElem').prop('checked',     $('#sgwxAlertWatches').is(':checked'));
     $('#armrStatementsBtnSwitchElem').prop('checked',  $('#sgwxAlertStatements').is(':checked'));
     $('#armrDiscussionsBtnSwitchElem').prop('checked', $('#sgwxAlertDiscussions').is(':checked'));
 
-    // triggerHandler fires the bundle's click handler without toggling checkbox state.
     var $btn = $('.alert_options_btn');
     if ($btn.length) $btn.first().triggerHandler('click');
 
-    // Watches and discussions visibility are managed outside filter_alerts.
     var m = window._sgwxMap;
     if (m) {
         var showWatches = $('#sgwxAlertWatches').is(':checked');
@@ -396,45 +419,34 @@ function _sgwxSyncFilter() {
 
 // ── Initialise ────────────────────────────────────────────────────────────
 window._sgwxAlertsInit = function() {
-    // Bundle positive logic: checked = show. Start all checked so everything shows by default.
-    $('#armrWarningsBtnSwitchElem, #armrWatchesBtnSwitchElem, '  +
+    $('#armrWarningsBtnSwitchElem, #armrWatchesBtnSwitchElem, ' +
       '#armrStatementsBtnSwitchElem, #armrDiscussionsBtnSwitchElem')
         .prop('checked', true);
 
-    // Make the panel draggable / resizable via jQuery UI.
     $('#sgwxAlertsPanel')
         .draggable({ handle: '#sgwxAlertsHeader', containment: 'window' })
         .resizable({ handles: 'all', minWidth: 200, minHeight: 150 });
 
-    // ── Ticker initialisation ─────────────────────────────────────────────
-    _sgwxBuildTicker();
-    setInterval(_sgwxBuildTicker, 30000);
+    // Always poll for new alerts (first run seeds silently, subsequent runs toast)
+    setInterval(_sgwxCheckNewAlerts, 15000);
 
-    // ── Layer visibility sync ─────────────────────────────────────────────
-    // The bundle shows/hides watches and discussions based on its own state
-    // machine. Sync our toggle states every few seconds so the layers stay
-    // in step with the panel controls even if the bundle's timing misses.
+    // Layer visibility sync
     setInterval(function() {
         var m = window._sgwxMap;
         if (!m) return;
         var showWatches = $('#sgwxAlertWatches').is(':checked');
         var showDisc    = $('#sgwxAlertDiscussions').is(':checked');
-        // Keep bundle's existing watch layers in sync (in case KMZ did load)
         ['watches_layer', 'watches_layer_fill'].forEach(function(id) {
             if (m.getLayer(id)) m.setLayoutProperty(id, 'visibility', showWatches ? 'visible' : 'none');
         });
         ['discussions_layer', 'discussions_layer_fill'].forEach(function(id) {
             if (m.getLayer(id)) m.setLayoutProperty(id, 'visibility', showDisc ? 'visible' : 'none');
         });
-        // NWS-based fallback watch layer
         _sgwxUpdateNwsWatches();
     }, 3000);
 
-    // ── Sidebar alert button: open / close panel in sync with alerts toggle ──
+    // ── Sidebar alert button ──────────────────────────────────────────────
     $('#alertMenuItemDiv').on('click', function() {
-        // The bundle's icon-click handler has already fired by the time we get
-        // here (bubbling), so the 'menu_item_selected' class reflects the new
-        // state.
         if ($('#alertMenuItemIcon').hasClass('menu_item_selected')) {
             $('#sgwxAlertsPanel').show();
             $('#alertMenuItemIcon').removeClass('icon-grey menu_item_not_selected');
@@ -444,66 +456,55 @@ window._sgwxAlertsInit = function() {
         }
     });
 
-    // ── Panel close button ────────────────────────────────────────────────
-    // If keep-active is on: just hide the panel; alerts stay on and icon stays highlighted.
-    $('#sgwxAlertsClose').on('click', function() {
-        $('#sgwxAlertsPanel').hide();
-        if ($('#sgwxAlertsKeepActive').is(':checked')) {
-            $('#alertMenuItemIcon').removeClass('icon-grey menu_item_not_selected');
-        } else {
-            if ($('#alertMenuItemIcon').hasClass('menu_item_selected')) {
-                $('#alertMenuItemIcon').trigger('click');
-            }
-        }
-    });
-
-    // ── Sidebar icon intercept (capture phase) ────────────────────────────
-    // When keep-active is on and alerts are already active, clicking the sidebar
-    // should only toggle the panel open/closed, not turn off the alerts overlay.
     document.getElementById('alertMenuItemDiv').addEventListener('click', function(e) {
         if ($('#sgwxAlertsKeepActive').is(':checked') &&
             $('#alertMenuItemIcon').hasClass('menu_item_selected')) {
             e.stopImmediatePropagation();
             var $panel = $('#sgwxAlertsPanel');
-            if ($panel.is(':visible')) {
-                $panel.hide();
-            } else {
-                $panel.show();
-            }
+            $panel.is(':visible') ? $panel.hide() : $panel.show();
             $('#alertMenuItemIcon').removeClass('icon-grey menu_item_not_selected');
         }
     }, true);
 
-    // ── Filter toggles ────────────────────────────────────────────────────
-    $('#sgwxAlertWarnings, #sgwxAlertWatches, #sgwxAlertStatements, #sgwxAlertDiscussions')
-        .on('change', function() {
-            _sgwxSyncFilter();
-        });
-
-    // ── Vocal alerts toggle ───────────────────────────────────────────────
-    $('#sgwxVocalAlertsOn').on('change', function() {
-        _sgwxVocalEnabled = $(this).is(':checked');
-        if (_sgwxVocalEnabled) {
-            // Start polling every 15 s (same cadence as AlertUpdater).
-            if (_sgwxVocalInterval) clearInterval(_sgwxVocalInterval);
-            _sgwxVocalInterval = setInterval(_sgwxAnnounceNew, 15000);
-            // Seed announced set with whatever is already on the map so we
-            // don't read out everything the moment the feature is enabled.
-            var data = window.atticData && window.atticData.alerts_data;
-            if (data && data.features) {
-                data.features.forEach(function(f) {
-                    var p  = f.properties;
-                    var id = p.id || (p.event + '_' + p.areaDesc);
-                    _sgwxAnnouncedIds.add(id);
-                });
-            }
+    $('#sgwxAlertsClose').on('click', function() {
+        $('#sgwxAlertsPanel').hide();
+        if ($('#sgwxAlertsKeepActive').is(':checked')) {
+            $('#alertMenuItemIcon').removeClass('icon-grey menu_item_not_selected');
         } else {
-            if (_sgwxVocalInterval) clearInterval(_sgwxVocalInterval);
-            window.speechSynthesis && window.speechSynthesis.cancel();
+            if ($('#alertMenuItemIcon').hasClass('menu_item_selected'))
+                $('#alertMenuItemIcon').trigger('click');
         }
     });
 
-    // ── Test vocal alert button ───────────────────────────────────────────
+    // ── Alerts List accordion button ──────────────────────────────────────
+    $('#sgwxAlertsListBtn').on('click', function() {
+        var $panel = $('#sgwxAlertsListPanel');
+        var $span  = $(this).find('span');
+        if ($panel.is(':visible')) {
+            $panel.hide();
+            $span.removeClass('menu_item_selected').addClass('icon-grey menu_item_not_selected');
+        } else {
+            _sgwxBuildAlertsList();
+            $panel.show();
+            $span.removeClass('icon-grey menu_item_not_selected').addClass('menu_item_selected');
+        }
+    });
+
+    $('#sgwxAlertsListClose').on('click', function() {
+        $('#sgwxAlertsListPanel').hide();
+        $('#sgwxAlertsListBtn span').removeClass('menu_item_selected').addClass('icon-grey menu_item_not_selected');
+    });
+
+    // ── Filter toggles ────────────────────────────────────────────────────
+    $('#sgwxAlertWarnings, #sgwxAlertWatches, #sgwxAlertStatements, #sgwxAlertDiscussions')
+        .on('change', function() { _sgwxSyncFilter(); });
+
+    // ── Vocal alerts ──────────────────────────────────────────────────────
+    $('#sgwxVocalAlertsOn').on('change', function() {
+        _sgwxVocalEnabled = $(this).is(':checked');
+        if (!_sgwxVocalEnabled) window.speechSynthesis && window.speechSynthesis.cancel();
+    });
+
     $('#sgwxVocalTestBtn').on('click', function() {
         _sgwxAlarmThenSpeak(
             'Test alert from SquishedGrape WX. ' +

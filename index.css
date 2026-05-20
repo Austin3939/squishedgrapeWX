@@ -1991,47 +1991,128 @@ td.day.active, span.month.active, span.year.active {
 /* jQuery UI resize handle visibility inside the panel */
 #sgwxSpcPanel .ui-resizable-handle { z-index: 301; }
 
-/* ── Weather Alert Ticker ─────────────────────────────────────────────── */
-#sgwxTicker {
-    position: fixed;
-    z-index: 250;
-    bottom: 0;
-    left: 60px;
-    right: 0;
-    height: 30px;
-    background-color: rgb(10, 10, 10);
-    border-top: 1px solid rgb(40, 40, 40);
-    overflow: hidden;
+/* ── Sidebar spacer (pushes dashboard btn to bottom on desktop) ───────── */
+.sidebarSpacer { flex: 1; }
+
+/* ── Alerts accordion panel ──────────────────────────────────────────── */
+.sgwxAccordionSection { border-bottom: 1px solid rgb(35,35,40); }
+.sgwxAccordionHeader {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    padding: 11px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    color: #d0d4e0;
+    gap: 8px;
 }
-#sgwxTickerTrack {
-    display: inline-flex;
-    align-items: center;
-    white-space: nowrap;
-    will-change: transform;
+.sgwxAccordionHeader:hover { background: rgba(255,255,255,0.04); }
+.sgwxAccordionCount {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.08);
+    color: #8a90a8;
 }
-.sgwxTickerItem {
-    display: inline-flex;
-    align-items: center;
-    height: 22px;
-    padding: 0 14px;
-    margin-right: 10px;
-    border-radius: 3px;
+.sgwxAccordionCountBadge { color: #fff !important; }
+.sgwxAccordionBody {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.25s ease;
+}
+.sgwxAccordionSection[data-open="true"] .sgwxAccordionBody { max-height: 600px; }
+.sgwxAccordionItem {
+    padding: 8px 16px 8px 28px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+}
+.sgwxAccordionItemTitle    { font-size: 12px; font-weight: 700; color: #d0d4e0; }
+.sgwxAccordionItemArea     { font-size: 11px; color: #6b7494; margin-top: 3px; line-height: 1.4; }
+.sgwxAccordionItemMeta     { font-size: 10px; color: #4b5270; margin-top: 3px; }
+.sgwxAccordionItemHeadline { font-size: 11px; color: #7a8090; margin-top: 5px; line-height: 1.5;
+                             border-top: 1px solid rgba(255,255,255,0.05); padding-top: 5px; }
+.sgwxAccordionEmpty        { font-size: 12px; color: #4b5270; padding: 8px 16px 10px 28px; font-style: italic; }
+
+/* ── Alert toast popup ───────────────────────────────────────────────── */
+#sgwxAlertToast {
+    position: fixed;
+    bottom: 24px;
+    left: 70px;
+    transform: translateY(110px);
+    z-index: 9999;
+    width: 360px;
+    max-width: calc(100vw - 84px);
+    border-left: 4px solid #e83030;
+    border-radius: 12px;
+    background: #1a0606;
+    color: #f0f2f8;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    pointer-events: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+#sgwxAlertToast.sgwxToastVisible {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+#sgwxToastClose {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: rgba(240,242,248,0.45);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 2px 4px;
+    line-height: 1;
+}
+#sgwxToastClose:hover { color: #f0f2f8; }
+#sgwxToastInner { padding: 14px 38px 14px 16px; }
+.sgwxToastEvent {
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 5px;
+}
+.sgwxToastArea {
+    font-size: 12px;
+    color: #c0c4d8;
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+.sgwxToastMeta {
+    font-size: 11px;
+    color: #7a7ea0;
+    margin-bottom: 6px;
+}
+.sgwxToastHeadline {
+    font-size: 12px;
+    color: #a0a4bc;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    padding-top: 8px;
+}
+.sgwxToastViewBtn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #93c4ff;
+    border-radius: 6px;
+    padding: 5px 12px;
     font-size: 12px;
     font-weight: 600;
-    color: white;
-    letter-spacing: 0.2px;
-    white-space: nowrap;
-    flex-shrink: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
-.sgwxTickerItem i {
-    margin-right: 5px;
-    font-size: 10px;
-}
-.sgwxTickerWarn    { background: rgb(185, 28, 28); }
-.sgwxTickerWatch   { background: rgb(180, 130, 0); }
-.sgwxTickerAdvisory{ background: rgb(25, 80, 180); }
+.sgwxToastViewBtn:hover { background: rgba(255,255,255,0.14); }
 
 /* Keep-active toggle in panel headers */
 .sgwxKeepActiveRow {
@@ -2209,11 +2290,11 @@ td.day.active, span.month.active, span.year.active {
         bottom: 60px !important;
     }
 
-    /* Alert ticker sits above the nav bar */
-    #sgwxTicker {
-        left: 0 !important;
-        bottom: 60px !important;
-    }
+    /* Toast sits above the mobile nav bar, full width */
+    #sgwxAlertToast { bottom: 68px; left: 8px; width: calc(100vw - 16px); max-width: none; }
+
+    /* Spacer collapses in horizontal mobile nav */
+    .sidebarSpacer { flex: 0; }
 
     /* Info panel — keep top-right but compact */
     #infoPanel {

@@ -158,58 +158,179 @@
                 <span>Getting your weather&hellip;</span>
             </div>
             <div id="sgwxDashContent">
-                <!-- Current conditions -->
-                <div id="sgwxDashCurrent">
-                    <div id="sgwxDashLocation">
-                        <i class="fa fa-location-dot"></i>
-                        <span id="sgwxDashLocationText">Locating&hellip;</span>
-                    </div>
-                    <i id="sgwxDashWeatherIcon" class="fa fa-sun"></i>
-                    <div id="sgwxDashTemp">--&deg;</div>
-                    <div id="sgwxDashConditionText">--</div>
-                    <div id="sgwxDashFeelsLike">Feels like --&deg;</div>
-                </div>
 
-                <!-- Details grid -->
-                <div id="sgwxDashDetails">
-                    <div class="sgwxDashDetailCard">
-                        <div class="sgwxDashDetailLabel"><i class="fa fa-wind"></i> Wind</div>
-                        <div class="sgwxDashDetailValue" id="sgwxDetailWind">--</div>
-                    </div>
-                    <div class="sgwxDashDetailCard">
-                        <div class="sgwxDashDetailLabel"><i class="fa fa-droplet"></i> Humidity</div>
-                        <div class="sgwxDashDetailValue" id="sgwxDetailHumidity">--</div>
-                    </div>
-                    <div class="sgwxDashDetailCard">
-                        <div class="sgwxDashDetailLabel"><i class="fa fa-sun"></i> UV Index</div>
-                        <div class="sgwxDashDetailValue" id="sgwxDetailUv">--</div>
-                    </div>
-                    <div class="sgwxDashDetailCard">
-                        <div class="sgwxDashDetailLabel"><i class="fa fa-eye"></i> Visibility</div>
-                        <div class="sgwxDashDetailValue" id="sgwxDetailVisibility">--</div>
-                    </div>
-                </div>
-
-                <!-- Active alerts -->
+                <!-- Alert banners (conditional) -->
                 <div id="sgwxDashAlertsContainer"></div>
 
-                <!-- Hourly -->
-                <div class="sgwxDashSectionLabel">Hourly Forecast</div>
-                <div id="sgwxDashHourlyWrap">
+                <!-- SPC Day 1 Outlook (conditional) -->
+                <div id="sgwxDashSpcContainer"></div>
+
+                <!-- Hero card -->
+                <div class="sgwx-card sgwx-hero-card">
+                    <div id="sgwxDashLocationSearch">
+                        <div id="sgwxDashSearchBox">
+                            <i class="fa fa-magnifying-glass"></i>
+                            <input id="sgwxDashSearchInput" type="text" placeholder="Search city…" autocomplete="off" spellcheck="false">
+                            <button id="sgwxDashGpsBtn" title="Use my location"><i class="fa fa-crosshairs"></i></button>
+                        </div>
+                        <div id="sgwxDashDropdown"></div>
+                    </div>
+                    <div class="sgwx-hero-body">
+                        <div class="sgwx-hero-left">
+                            <div id="sgwxDashTemp">--&deg;</div>
+                            <div id="sgwxDashConditionText">--</div>
+                            <div id="sgwxDashFeelsLike">Feels like --&deg;</div>
+                            <div id="sgwxDashNarrative" class="sgwx-narrative"></div>
+                            <div class="sgwx-hero-stats">
+                                <span><i class="fa fa-droplet"></i><span id="sgwxHeroHumidity">--%</span></span>
+                                <span><i class="fa fa-wind"></i><span id="sgwxHeroWind">-- mph</span></span>
+                                <span><i class="fa fa-umbrella"></i><span id="sgwxHeroRain">--%</span></span>
+                            </div>
+                        </div>
+                        <div class="sgwx-hero-right">
+                            <i id="sgwxDashWeatherIcon" class="fa fa-sun"></i>
+                        </div>
+                    </div>
+                    <div class="sgwx-hero-divider"></div>
                     <div id="sgwxDashHourlyScroll"></div>
                 </div>
 
-                <!-- 7-day -->
-                <div class="sgwxDashSectionLabel">7-Day Forecast</div>
+                <!-- 7-day forecast -->
+                <div class="sgwx-section-label">7-Day Forecast</div>
                 <div id="sgwxDashDailyList"></div>
+
+                <!-- Condition stat tiles -->
+                <div class="sgwx-section-label">Conditions</div>
+                <div class="sgwx-stat-grid">
+                    <div class="sgwx-stat-tile">
+                        <div class="sgwx-stat-top"><i class="fa fa-droplet"></i> Humidity</div>
+                        <div class="sgwx-stat-val" id="sgwxDetailHumidity">--%</div>
+                        <div class="sgwx-stat-desc" id="sgwxStatHumidityDesc">--</div>
+                        <div class="sgwx-stat-track"><div class="sgwx-stat-fill sgwx-fill-blue" id="sgwxStatHumidityBar"></div></div>
+                    </div>
+                    <div class="sgwx-stat-tile">
+                        <div class="sgwx-stat-top"><i class="fa fa-wind"></i> Wind</div>
+                        <div class="sgwx-stat-val" id="sgwxDetailWind">-- mph</div>
+                        <div class="sgwx-stat-desc" id="sgwxStatWindDesc">--</div>
+                        <div class="sgwx-stat-track"><div class="sgwx-stat-fill sgwx-fill-teal" id="sgwxStatWindBar"></div></div>
+                    </div>
+                    <div class="sgwx-stat-tile">
+                        <div class="sgwx-stat-top"><i class="fa fa-eye"></i> Visibility</div>
+                        <div class="sgwx-stat-val" id="sgwxDetailVisibility">-- mi</div>
+                        <div class="sgwx-stat-desc" id="sgwxStatVisDesc">--</div>
+                        <div class="sgwx-stat-track"><div class="sgwx-stat-fill sgwx-fill-purple" id="sgwxStatVisBar"></div></div>
+                    </div>
+                    <div class="sgwx-stat-tile">
+                        <div class="sgwx-stat-top"><i class="fa fa-gauge"></i> Pressure</div>
+                        <div class="sgwx-stat-val" id="sgwxDetailPressure">-- inHg</div>
+                        <div class="sgwx-stat-desc" id="sgwxStatPressDesc">--</div>
+                        <div id="sgwxPressureSparkline" class="sgwx-pressure-sparkline"></div>
+                        <div class="sgwx-stat-trend" id="sgwxPressureTrend"></div>
+                    </div>
+                </div>
+
+                <!-- UV, AQI & CAPE -->
+                <div class="sgwx-section-label">Atmosphere</div>
+                <div class="sgwx-three-col">
+                    <div class="sgwx-card sgwx-ring-card">
+                        <svg class="sgwx-ring-svg" viewBox="0 0 64 64">
+                            <circle class="sgwx-ring-track" cx="32" cy="32" r="26"/>
+                            <circle class="sgwx-ring-fill sgwx-ring-amber" cx="32" cy="32" r="26" id="sgwxUvRingFill"/>
+                        </svg>
+                        <div class="sgwx-ring-info">
+                            <div class="sgwx-ring-val" id="sgwxDetailUv">--</div>
+                            <div class="sgwx-ring-name">UV Index</div>
+                            <div class="sgwx-ring-sub" id="sgwxUvLabel">--</div>
+                        </div>
+                    </div>
+                    <div class="sgwx-card sgwx-ring-card">
+                        <svg class="sgwx-ring-svg" viewBox="0 0 64 64">
+                            <circle class="sgwx-ring-track" cx="32" cy="32" r="26"/>
+                            <circle class="sgwx-ring-fill sgwx-ring-teal" cx="32" cy="32" r="26" id="sgwxAqiRingFill"/>
+                        </svg>
+                        <div class="sgwx-ring-info">
+                            <div class="sgwx-ring-val" id="sgwxAqiValue">--</div>
+                            <div class="sgwx-ring-name">Air Quality</div>
+                            <div class="sgwx-ring-sub" id="sgwxAqiLabel">--</div>
+                        </div>
+                    </div>
+                    <div class="sgwx-card sgwx-ring-card">
+                        <svg class="sgwx-ring-svg" viewBox="0 0 64 64">
+                            <circle class="sgwx-ring-track" cx="32" cy="32" r="26"/>
+                            <circle class="sgwx-ring-fill sgwx-ring-coral" cx="32" cy="32" r="26" id="sgwxCapeRingFill"/>
+                        </svg>
+                        <div class="sgwx-ring-info">
+                            <div class="sgwx-ring-val" id="sgwxCapeValue">--</div>
+                            <div class="sgwx-ring-name">CAPE</div>
+                            <div class="sgwx-ring-sub" id="sgwxCapeLabel">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sunrise / Sunset -->
+                <div class="sgwx-section-label">Daylight</div>
+                <div class="sgwx-card sgwx-sun-card">
+                    <div class="sgwx-sun-row">
+                        <div class="sgwx-sun-end">
+                            <i id="sgwxSunIconL" class="fa fa-arrow-up" style="color:var(--sgwx-amber)"></i>
+                            <div class="sgwx-sun-time" id="sgwxSunrise">--:--</div>
+                            <div class="sgwx-sun-lbl" id="sgwxSunLblL">Sunrise</div>
+                        </div>
+                        <div class="sgwx-sun-mid">
+                            <div class="sgwx-sun-daylight" id="sgwxDaylight">-- hrs</div>
+                            <div class="sgwx-sun-lbl" id="sgwxSunMidLbl">Daylight</div>
+                        </div>
+                        <div class="sgwx-sun-end">
+                            <i id="sgwxSunIconR" class="fa fa-arrow-down" style="color:var(--sgwx-text-3)"></i>
+                            <div class="sgwx-sun-time" id="sgwxSunset">--:--</div>
+                            <div class="sgwx-sun-lbl" id="sgwxSunLblR">Sunset</div>
+                        </div>
+                    </div>
+                    <svg id="sgwxSunArc" class="sgwx-sun-arc-svg" viewBox="0 0 300 130" preserveAspectRatio="xMidYMid meet"></svg>
+                    <div class="sgwx-sun-golden" id="sgwxGoldenHour"></div>
+                </div>
+
+                <!-- Gardening panel -->
+                <div class="sgwx-section-label">Gardening</div>
+                <div class="sgwx-card sgwx-garden-card">
+                    <div class="sgwx-garden-grid">
+                        <div class="sgwx-garden-item">
+                            <i class="fa fa-snowflake sgwx-garden-icon"></i>
+                            <div class="sgwx-garden-body">
+                                <div class="sgwx-garden-label">Frost Risk <span class="sgwx-tip-icon" data-sgwx-tip="First night in the 7-day forecast where the low drops to 32°F or below. A hard freeze (28°F) can kill most vegetables and annuals.">?</span></div>
+                                <div class="sgwx-garden-val" id="sgwxGardenFrost">--</div>
+                            </div>
+                        </div>
+                        <div class="sgwx-garden-item">
+                            <i class="fa fa-temperature-half sgwx-garden-icon"></i>
+                            <div class="sgwx-garden-body">
+                                <div class="sgwx-garden-label">Soil Temp <span class="sgwx-tip-icon" data-sgwx-tip="Surface soil temperature (0cm depth). Plants grow based on soil temp, not air temp — most warm-season seeds won't germinate below 60°F.">?</span></div>
+                                <div class="sgwx-garden-val" id="sgwxGardenSoil">--</div>
+                                <div class="sgwx-garden-sub" id="sgwxGardenSoilDesc">--</div>
+                            </div>
+                        </div>
+                        <div class="sgwx-garden-item">
+                            <i class="fa fa-seedling sgwx-garden-icon"></i>
+                            <div class="sgwx-garden-body">
+                                <div class="sgwx-garden-label">Growing Degree Days <span class="sgwx-tip-icon" data-sgwx-tip="Heat units accumulated since Jan 1 (base 50°F). Each crop needs a target GDD total to flower, fruit, or mature — e.g. sweet corn needs ~700 GDD from planting.">?</span></div>
+                                <div class="sgwx-garden-val" id="sgwxGardenGdd">--</div>
+                                <div class="sgwx-garden-sub" id="sgwxGardenGddDesc">Loading season data…</div>
+                            </div>
+                        </div>
+                        <div class="sgwx-garden-item">
+                            <i class="fa fa-droplet sgwx-garden-icon"></i>
+                            <div class="sgwx-garden-body">
+                                <div class="sgwx-garden-label">7-Day Rainfall <span class="sgwx-tip-icon" data-sgwx-tip="Total forecast precipitation over the next 7 days. Most vegetables need about 1 inch per week. Sandy soils need more frequent watering than clay.">?</span></div>
+                                <div class="sgwx-garden-val" id="sgwxGardenRain">--</div>
+                                <div class="sgwx-garden-sub" id="sgwxGardenWater">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
-
-    <!-- Back-to-dashboard button (visible over radar) -->
-    <button id="sgwxBackToDashBtn">
-        <i class="fa fa-arrow-left"></i> Weather
-    </button>
 
     <div id="bodyDiv">
 
@@ -238,6 +359,9 @@
         <div id="alertMenuItemDiv" class="mapFooterMenuItem" title="Weather Alerts">
             <span id="alertMenuItemIcon" class="fa fa-triangle-exclamation icon-grey menu_item_not_selected"></span>
         </div>
+        <div id="sgwxAlertsListBtn" class="mapFooterMenuItem" title="Active Alerts List">
+            <span class="fa fa-flag icon-grey menu_item_not_selected"></span>
+        </div>
         <div id="metarStationMenuItemDiv" class="mapFooterMenuItem" title="METAR Stations" style="display:none;">
             <span id="metarStationMenuItemIcon" class="fa fa-cloud-sun icon-grey menu_item_not_selected"></span>
         </div>
@@ -255,6 +379,10 @@
         </div>
         <div id="settingsItemDiv" class="mapFooterMenuItem" title="Menu">
             <span id="settingsItemClass" class="fa fa-bars icon-grey menu_item_not_selected"></span>
+        </div>
+        <div class="sidebarSpacer"></div>
+        <div id="sgwxDashboardBtn" class="mapFooterMenuItem" title="Weather Dashboard" onclick="if(window._sgwxShowDashboard) window._sgwxShowDashboard()">
+            <span class="fa fa-house icon-grey menu_item_not_selected"></span>
         </div>
     </div>
 
@@ -985,9 +1113,19 @@
         <iframe id="sgwxWindyFrame" src="" style="width:100%; height:calc(100% - 34px); border:none; display:block;"></iframe>
     </div>
 
-    <!-- Weather alert ticker — full-width scrolling bar at bottom -->
-    <div id="sgwxTicker" style="display:none;">
-        <div id="sgwxTickerTrack"></div>
+    <!-- Active Alerts accordion panel -->
+    <div id="sgwxAlertsListPanel" class="sgwxPanel" style="display:none; left:68px; top:60px; width:320px; max-height:480px; overflow-y:auto;">
+        <div id="sgwxAlertsListHeader" class="sgwxPanelHeader">
+            <span style="font-weight:600;">Active Alerts</span>
+            <span id="sgwxAlertsListClose" class="sgwxPanelClose">&#x2715;</span>
+        </div>
+        <div id="sgwxAlertsListBody" style="padding:8px 0;"></div>
+    </div>
+
+    <!-- Alert toast popup (content injected by JS) -->
+    <div id="sgwxAlertToast">
+        <button id="sgwxToastClose">&#x2715;</button>
+        <div id="sgwxToastInner"></div>
     </div>
 
     </div>
