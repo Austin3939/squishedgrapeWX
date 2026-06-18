@@ -2,3 +2,7 @@ node_modules
 .DS_Store
 AtticRadar*/
 .claude/
+
+# Local radar sample data — not part of the deployed site (Cloudflare Pages has a
+# 25 MiB per-file limit; these are dev-only samples, kept locally, fetched live at runtime).
+data/
