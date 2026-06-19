@@ -106,6 +106,10 @@ $('.psmRow').click(function(e) {
 
         $('#productsDropdownTriggerText').text(longProductNames[value]);
 
+        // Remember the selected product so it can be preserved when the user
+        // switches to a different radar site (see station_markers.js).
+        window.atticData.currentProduct = value;
+
         var selectedTiltNum = $(this).find('.psmRowTiltSelect').text().split(' ')[1];
         var resultProduct = productLookup[selectedTiltNum][value];
 
@@ -174,7 +178,8 @@ $('.psmRowTiltSelect').click(function() {
         // reset all blue text elements to display "Tilt 1"
         $('.psmRowTiltSelect').each(function() {
             $(this).text('Tilt 1');
-        })
+        });
+        window.atticData.currentProduct = thisProduct;
         // set the blue text element to read the text of the selected dropdown item
         thisObj.text($(this).text());
         // re-enable scrolling on the productSelectionMenu
@@ -188,3 +193,16 @@ $('.psmRowTiltSelect').click(function() {
         $(`.psmRow[value="${thisProduct}"]`).click();
     })
 })
+
+
+// Products available per radar station type (matches the menu rows in
+// index.html). Used to decide whether a previously-selected product can be
+// carried over when the user switches radar sites.
+var wsr88dProducts = ['ref', 'vel', 'srvel', 'rho', 'zdr', 'hyc', 'hhc', 'vil', 'kdp', 'lowres-ref', 'lowres-vel'];
+var tdwrProducts   = ['sr-ref', 'lr-ref', 'tdwrVel'];
+
+module.exports = {
+    productLookup,
+    wsr88dProducts,
+    tdwrProducts,
+};

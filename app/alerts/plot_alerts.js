@@ -48,14 +48,17 @@ function _add_alert_layers(geojson) {
             }
         });
 
-        map.on('mouseover', `alertsLayerFill`, function(e) {
+        // Alert info is triggered by clicking/tapping the alert's border line
+        // (alertsLayer), not the filled interior — that leaves the interior
+        // free for the radar value tooltip (see inspector/click_value.js).
+        map.on('mouseover', `alertsLayer`, function(e) {
             map.getCanvas().style.cursor = 'pointer';
         });
-        map.on('mouseout', `alertsLayerFill`, function(e) {
+        map.on('mouseout', `alertsLayer`, function(e) {
             map.getCanvas().style.cursor = '';
         });
 
-        map.on('click', `alertsLayerFill`, click_listener);
+        map.on('click', `alertsLayer`, click_listener);
     }
 }
 

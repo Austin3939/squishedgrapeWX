@@ -353,16 +353,20 @@
                             <div class="sgwx-ring-sub" id="sgwxAqiLabel">--</div>
                         </div>
                     </div>
-                    <div class="sgwx-card sgwx-ring-card">
-                        <svg class="sgwx-ring-svg" viewBox="0 0 64 64">
-                            <circle class="sgwx-ring-track" cx="32" cy="32" r="26"/>
-                            <circle class="sgwx-ring-fill sgwx-ring-coral" cx="32" cy="32" r="26" id="sgwxCapeRingFill"/>
-                        </svg>
-                        <div class="sgwx-ring-info">
-                            <div class="sgwx-ring-val" id="sgwxCapeValue">--</div>
-                            <div class="sgwx-ring-name">CAPE</div>
-                            <div class="sgwx-ring-sub" id="sgwxCapeLabel">--</div>
+                    <div class="sgwx-card sgwx-ring-card sgwx-cape-card">
+                        <div class="sgwx-cape-top">
+                            <svg class="sgwx-ring-svg" viewBox="0 0 64 64">
+                                <circle class="sgwx-ring-track" cx="32" cy="32" r="26"/>
+                                <circle class="sgwx-ring-fill sgwx-ring-coral" cx="32" cy="32" r="26" id="sgwxCapeRingFill"/>
+                            </svg>
+                            <div class="sgwx-ring-info">
+                                <div class="sgwx-ring-val" id="sgwxCapeValue">--</div>
+                                <div class="sgwx-ring-name">CAPE</div>
+                                <div class="sgwx-ring-sub" id="sgwxCapeLabel">--</div>
+                            </div>
                         </div>
+                        <div id="sgwxCapeSparkline" class="sgwx-pressure-sparkline"></div>
+                        <div class="sgwx-stat-trend" id="sgwxCapeTrend"></div>
                     </div>
                 </div>
 
@@ -952,8 +956,6 @@
     </div>
     <div id="productSelectionMenu" style="display: none">
         <div id="wsr88d_psm" class="psm" style="display: none">
-            <div class="psmSectionBreak"></div>
-
             <div class="psmSectionTitle">Super Resolution</div>
             <div class="psmRow noselect" value="ref">Super-Res Base Reflectivity<div class="psmRowTiltSelect">Tilt 1</div></div>
             <div class="psmRow noselect" value="vel">Super-Res Base Velocity<div class="psmRowTiltSelect">Tilt 1</div></div>
@@ -1069,13 +1071,24 @@
         <div id="sgwxAlertsHeader" class="sgwxPanelHeader">
             <span class="sgwxPanelTitle"><i class="fa fa-triangle-exclamation" style="margin-right:6px; font-size:11px;"></i>Weather Alerts</span>
             <label class="sgwxKeepActiveRow" title="Keep alerts active when panel is closed">
-                <input type="checkbox" id="sgwxAlertsKeepActive" class="sgwxToggleCheck">
+                <input type="checkbox" id="sgwxAlertsKeepActive" class="sgwxToggleCheck" checked>
                 <span class="sgwxToggleSlider sgwxToggleSliderSm"></span>
                 <span class="sgwxKeepActiveLabel">Keep Active</span>
             </label>
             <button id="sgwxAlertsClose" class="sgwxPanelCloseBtn">&#x2715;</button>
         </div>
         <div class="sgwxPanelBody">
+
+            <div class="sgwxSpcGroupLabel" style="margin-bottom:6px;">Popups</div>
+
+            <label class="sgwxAlertToggleRow">
+                <span class="sgwxAlertToggleLabel">Popup alerts</span>
+                <span class="sgwxAlertToggleHint">On-screen popups for new alerts</span>
+                <input type="checkbox" id="sgwxAlertPopups" class="sgwxToggleCheck" checked>
+                <span class="sgwxToggleSlider"></span>
+            </label>
+
+            <div class="sgwxSpcDivider"></div>
 
             <div class="sgwxSpcGroupLabel" style="margin-bottom:6px;">Alert Types</div>
 
