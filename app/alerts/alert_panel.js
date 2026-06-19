@@ -204,15 +204,22 @@ function _sgwxCheckNewAlerts() {
         if (_sgwxAnnouncedIds.has(id)) return;
         _sgwxAnnouncedIds.add(id);
 
-        // Show toast with full feature info
-        _sgwxShowToast(f);
+        var cat = _sgwxAlertCategory(p.event);
+        var catEnabled =
+            (cat === 'warning'    && wantWarnings)    ||
+            (cat === 'watch'      && wantWatches)     ||
+            (cat === 'statement'  && wantStatements)  ||
+            (cat === 'discussion' && wantDiscussions);
+
+        // Show toast popup — only if popups are enabled and this alert's
+        // category is toggled on.
+        if ($('#sgwxAlertPopups').is(':checked') && catEnabled) _sgwxShowToast(f);
 
         // Refresh accordion if already open
         if ($('#sgwxAlertsListPanel').is(':visible')) _sgwxBuildAlertsList();
 
         // Vocal — only if enabled and category/type match
         if (!_sgwxVocalEnabled) return;
-        var cat = _sgwxAlertCategory(p.event);
         if (cat === 'warning'    && !wantWarnings)    return;
         if (cat === 'watch'      && !wantWatches)     return;
         if (cat === 'statement'  && !wantStatements)  return;

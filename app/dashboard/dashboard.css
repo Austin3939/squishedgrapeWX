@@ -476,6 +476,18 @@
 }
 .sgwx-ring-sub { font-size: 12px; color: var(--sgwx-text-2); }
 
+/* CAPE card stacks the ring + a trend sparkline (like the pressure tile) */
+.sgwx-cape-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+}
+.sgwx-cape-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
 /* ── Sunrise/sunset card ─────────────────────────────────────────────── */
 .sgwx-sun-card { padding: 18px 20px 12px; }
 .sgwx-sun-row {

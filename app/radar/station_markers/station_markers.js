@@ -13,6 +13,7 @@ const Level3Factory = require('../libnexrad/level3/level3_factory');
 
 const loaders_nexrad = require('../libnexrad/loaders_nexrad');
 const nexrad_locations = require('../libnexrad/nexrad_locations').NEXRAD_LOCATIONS;
+const psm = require('../../core/menu/productSelectionMenu');
 
 function _copy(obj) {
     return JSON.parse(JSON.stringify(obj));
@@ -193,32 +194,44 @@ function _init_click_listener() {
         const stationType = base.type;
         window.atticData.L2_file_id = '';
 
-        var productToLoad;
+        // Default product per station type, and the set of products each
+        // type supports. If the product selected on the previous site is also
+        // valid for this site's type, keep it; otherwise fall back to default.
+        var defaultProduct = { 'WSR-88D': 'ref', 'TDWR': 'sr-ref' };
+        var validProducts  = { 'WSR-88D': psm.wsr88dProducts, 'TDWR': psm.tdwrProducts };
+
         var abbvProductToLoad;
         if (stationType == 'WSR-88D') {
             $('#wsr88d_psm').show();
             $('#tdwr_psm').hide();
             $('#level2_psm').hide();
-
-            productToLoad = 'N0B';
-            abbvProductToLoad = 'ref';
-            // $(`.productOption[value="${abbvProductToLoad}"]`).html()
-            $('#productsDropdownTriggerText').html(window.longProductNames[abbvProductToLoad]);
         } else if (stationType == 'TDWR') {
             $('#wsr88d_psm').hide();
             $('#tdwr_psm').show();
             $('#level2_psm').hide();
-
-            productToLoad = 'TZ0';
-            abbvProductToLoad = 'sr-ref';
-            // $(`.productOption[value="${abbvProductToLoad}"]`).html()
-            $('#productsDropdownTriggerText').html(window.longProductNames[abbvProductToLoad]);
         }
+
+        var valid = validProducts[stationType] || [];
+        var prevProduct = window.atticData.currentProduct;
+        abbvProductToLoad = (prevProduct && valid.indexOf(prevProduct) !== -1)
+            ? prevProduct
+            : defaultProduct[stationType];
+
+        // Tilt selection doesn't carry across sites — reset the menu to Tilt 1.
+        $('.psmRowTiltSelect').text('Tilt 1');
+        var productToLoad = psm.productLookup[1][abbvProductToLoad];
+
+        window.atticData.currentProduct = abbvProductToLoad;
+        $('#productsDropdownTriggerText').html(window.longProductNames[abbvProductToLoad]);
 
         $('#radarInfoSpan').show();
 
         window.atticData.from_file_upload = false;
-        loaders_nexrad.quick_level_3_plot(clickedStation, productToLoad, (L3Factory) => {});
+        if (abbvProductToLoad == 'srvel') {
+            loaders_nexrad.quick_storm_relative_velocity_plot(clickedStation, productToLoad, (L3Factory) => {});
+        } else {
+            loaders_nexrad.quick_level_3_plot(clickedStation, productToLoad, (L3Factory) => {});
+        }
     });
 }
 

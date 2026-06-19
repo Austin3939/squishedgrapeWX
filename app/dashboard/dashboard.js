@@ -93,7 +93,6 @@ function _sgwxHourLabel(isoStr) {
 
 function _sgwxDayName(isoStr, i) {
     if (i === 0) return 'Today';
-    if (i === 1) return 'Tmrw';
     return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(isoStr + 'T12:00:00').getDay()];
 }
 
@@ -442,6 +441,51 @@ function _sgwxDashRenderPressureSparkline(hourly) {
     _sgwxSet('sgwxPressureTrend', trend);
 }
 
+// ── CAPE sparkline ─────────────────────────────────────────────────────
+function _sgwxDashRenderCapeSparkline(hourly) {
+    var el = document.getElementById('sgwxCapeSparkline');
+    if (!el || !hourly.cape) return;
+
+    var now = Date.now();
+    var sixHrAgo = now - 6 * 3600000;
+    var capes = [];
+
+    for (var i = 0; i < hourly.time.length; i++) {
+        var t = new Date(hourly.time[i]).getTime();
+        if (t >= sixHrAgo && t <= now + 1800000 && hourly.cape[i] != null) {
+            capes.push(hourly.cape[i]);
+        }
+    }
+    if (capes.length < 2) return;
+
+    var first = capes[0], last = capes[capes.length - 1];
+    var diff = last - first;
+    // Rising instability is the "watch" direction (coral); easing is teal.
+    var trend, clr;
+    if      (diff >  200) { trend = '↑ Building rapidly'; clr = 'var(--sgwx-coral)'; }
+    else if (diff >  50)  { trend = '↑ Building';         clr = 'var(--sgwx-coral)'; }
+    else if (diff < -200) { trend = '↓ Easing rapidly';  clr = 'var(--sgwx-teal)'; }
+    else if (diff < -50)  { trend = '↓ Easing';          clr = 'var(--sgwx-teal)'; }
+    else                  { trend = '→ Steady';           clr = 'var(--sgwx-text-3)'; }
+
+    var min = Math.min.apply(null, capes);
+    var max = Math.max.apply(null, capes);
+    var rng = max - min || 0.1;
+    var W = 100, H = 28, n = capes.length;
+
+    var pts = capes.map(function(p, i) {
+        var x = n > 1 ? (i / (n - 1)) * W : W / 2;
+        var y = H - ((p - min) / rng) * (H - 6) - 3;
+        return x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+
+    el.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" ' +
+        'style="width:100%;height:' + H + 'px;display:block;overflow:visible">' +
+        '<polyline points="' + pts + '" fill="none" stroke="' + clr + '" stroke-width="1.5" ' +
+        'stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    _sgwxSet('sgwxCapeTrend', trend);
+}
+
 // ── Gardening panel ────────────────────────────────────────────────────
 function _sgwxDashRenderGarden(daily, hourly) {
     var now = Date.now();
@@ -501,7 +545,23 @@ function _sgwxDashRenderGarden(daily, hourly) {
 function _sgwxDashRender(data) {
     var c     = data.current;
     var night = _sgwxIsNight();
-    var wmo   = _sgwxWmoGet(c.weather_code, night);
+
+    // Use the current-hour code from the hourly series for the hero icon and
+    // condition label so they agree with the narrative and the hourly strip
+    // (Open-Meteo's current.weather_code can disagree with the hourly value,
+    // which made the icon/label look inconsistent — e.g. "Mainly Clear" sun
+    // over a "Partly Cloudy" hourly icon).
+    var heroCode = c.weather_code;
+    if (data.hourly && data.hourly.weather_code) {
+        var heroNow = Date.now();
+        for (var hci = 0; hci < data.hourly.time.length; hci++) {
+            if (new Date(data.hourly.time[hci]).getTime() >= heroNow - 1800000) {
+                if (data.hourly.weather_code[hci] != null) heroCode = data.hourly.weather_code[hci];
+                break;
+            }
+        }
+    }
+    var wmo = _sgwxWmoGet(heroCode, night);
 
     document.getElementById('sgwxDashLoading').style.display = 'none';
     document.getElementById('sgwxDashContent').style.display = 'flex';
@@ -580,6 +640,7 @@ function _sgwxDashRender(data) {
     _sgwxDashRenderDaily(data.daily);
     _sgwxDashRenderSun(data.daily);
     _sgwxDashRenderPressureSparkline(data.hourly);
+    _sgwxDashRenderCapeSparkline(data.hourly);
     _sgwxDashRenderGarden(data.daily, data.hourly);
     _sgwxDashFetchGdd(_sgwxDashLat, _sgwxDashLon);
 }

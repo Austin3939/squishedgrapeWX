@@ -1232,6 +1232,27 @@ https://tobiasahlin.com/spinkit/
     pointer-events: none;
 }
 
+/* Radar value tooltip — click/tap a point on the radar to read its value */
+.radarValuePopup .mapboxgl-popup-content {
+    background: rgba(28, 28, 30, 0.95);
+    color: #fff;
+    border-radius: 8px;
+    padding: 6px 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+.radarValuePopupValue {
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.radarValuePopupBeam {
+    font-size: 12px;
+    font-style: italic;
+    opacity: 0.6;
+    margin-top: 2px;
+    white-space: nowrap;
+}
+
 #psmTiltDropdown {
     position: absolute;
     z-index: 999;
@@ -2296,6 +2317,10 @@ td.day.active, span.month.active, span.year.active {
     /* Spacer collapses in horizontal mobile nav */
     .sidebarSpacer { flex: 0; }
 
+    /* Home button moves to the front of the bottom nav so it's always
+       visible without scrolling (hamburger/settings push right). */
+    #sgwxDashboardBtn { order: -1; }
+
     /* Info panel — keep top-right but compact */
     #infoPanel {
         right: 6px !important;
@@ -2304,13 +2329,15 @@ td.day.active, span.month.active, span.year.active {
         max-width: 170px !important;
     }
 
-    /* Product selection menu — full width */
+    /* Product selection menu — sized to content, anchored bottom-right
+       above the nav (not full width). */
     #productSelectionMenu {
-        left: 0 !important;
-        right: 0 !important;
-        width: 100% !important;
+        left: auto !important;
+        right: 8px !important;
+        width: auto !important;
+        max-width: 78vw !important;
         max-height: 50vh !important;
-        border-radius: 12px 12px 0 0;
+        border-radius: 12px;
         bottom: 60px !important;
         top: auto !important;
     }
