@@ -1,41 +1,33 @@
 /* ── SquishedGrape WX Dashboard ─────────────────────────────────────── */
 
+/* ── Atmosphere theme ────────────────────────────────────────────────────
+   A committed night-sky world: the background is a living atmospheric
+   gradient and every surface is frosted glass floating above it. Because the
+   sky is the concept, the palette is the same in both OS themes (see the
+   Atmosphere theme layer at the bottom of this file for the sky + glass). */
 :root {
-    --sgwx-bg:          #f4f6fb;
-    --sgwx-surface:     #ffffff;
-    --sgwx-surface-2:   #f0f2f8;
-    --sgwx-border:      rgba(0,0,0,0.08);
-    --sgwx-text:        #111827;
-    --sgwx-text-2:      #6b7280;
-    --sgwx-text-3:      #9ca3af;
-    --sgwx-blue:        #3b82f6;
-    --sgwx-amber:       #f59e0b;
-    --sgwx-teal:        #14b8a6;
-    --sgwx-purple:      #8b5cf6;
-    --sgwx-coral:       #ef4444;
-    --sgwx-warn-bg:     #fffbeb;
-    --sgwx-warn-border: #f59e0b;
-    --sgwx-warn-text:   #92400e;
-    --sgwx-radius:      16px;
-}
-@media (prefers-color-scheme: dark) {
-    :root {
-        --sgwx-bg:          #0d0f14;
-        --sgwx-surface:     #161922;
-        --sgwx-surface-2:   #1e2232;
-        --sgwx-border:      rgba(255,255,255,0.07);
-        --sgwx-text:        #f0f2f8;
-        --sgwx-text-2:      #8a90a8;
-        --sgwx-text-3:      #4b5270;
-        --sgwx-blue:        #60a5fa;
-        --sgwx-amber:       #fbbf24;
-        --sgwx-teal:        #2dd4bf;
-        --sgwx-purple:      #a78bfa;
-        --sgwx-coral:       #f87171;
-        --sgwx-warn-bg:     #1c1400;
-        --sgwx-warn-border: #d97706;
-        --sgwx-warn-text:   #fcd34d;
-    }
+    --sgwx-bg:          #0b0e26;
+    --sgwx-surface:     rgba(255,255,255,0.06);
+    --sgwx-surface-2:   rgba(255,255,255,0.10);
+    --sgwx-border:      rgba(255,255,255,0.12);
+    --sgwx-text:        #eaf0ff;
+    --sgwx-text-2:      rgba(234,240,255,0.66);
+    --sgwx-text-3:      rgba(234,240,255,0.42);
+    --sgwx-blue:        #8ea2ff;
+    --sgwx-amber:       #ffc46b;
+    --sgwx-teal:        #38e1d6;
+    --sgwx-purple:      #b39dff;
+    --sgwx-coral:       #ff6b8a;
+    --sgwx-warn-bg:     rgba(255,138,91,0.14);
+    --sgwx-warn-border: rgba(255,138,91,0.55);
+    --sgwx-warn-text:   #ffcbb0;
+    --sgwx-radius:      18px;
+    /* Atmosphere signature accents */
+    --sgwx-violet:      #7c4dff;
+    --sgwx-cyan:        #38e1d6;
+    --sgwx-ember:       #ff8a5b;
+    --sgwx-accent-grad: linear-gradient(90deg, #7c4dff, #38e1d6);
+    --sgwx-glass-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 10px 30px rgba(0,0,0,0.30);
 }
 
 /* ── Shell ───────────────────────────────────────────────────────────── */
@@ -609,18 +601,14 @@
     gap: 4px;
 }
 .sgwx-alert-tornado {
-    --sgwx-warn-bg:     #fef2f2;
-    --sgwx-warn-border: #ef4444;
-    --sgwx-warn-text:   #7f1d1d;
+    --sgwx-warn-bg:     rgba(239,68,68,0.14);
+    --sgwx-warn-border: rgba(248,113,113,0.60);
+    --sgwx-warn-text:   #fca5a5;
 }
 .sgwx-alert-watch {
-    --sgwx-warn-bg:     #fffde7;
-    --sgwx-warn-border: #eab308;
-    --sgwx-warn-text:   #713f12;
-}
-@media (prefers-color-scheme: dark) {
-    .sgwx-alert-tornado { --sgwx-warn-bg: #1c0606; --sgwx-warn-border: #ef4444; --sgwx-warn-text: #fca5a5; }
-    .sgwx-alert-watch   { --sgwx-warn-bg: #1c1a06; --sgwx-warn-border: #eab308; --sgwx-warn-text: #fde047; }
+    --sgwx-warn-bg:     rgba(234,179,8,0.14);
+    --sgwx-warn-border: rgba(234,179,8,0.55);
+    --sgwx-warn-text:   #fde047;
 }
 .sgwx-alert-head {
     display: flex;
@@ -824,4 +812,77 @@
     .sgwx-three-col      { grid-template-columns: 1fr 1fr; }
     .sgwx-garden-grid    { grid-template-columns: 1fr; }
     .sgwx-spc-rings      { gap: 12px; }
+}
+
+/* ═══ ATMOSPHERE THEME LAYER ══════════════════════════════════════════════
+   The living sky sits on the fixed shell; content scrolls above it. Surfaces
+   are frosted glass, and the violet→cyan accent carries the signature. */
+#sgwxDashboard {
+    background:
+        radial-gradient(120% 85% at 82% -8%, rgba(124,77,255,0.42), transparent 55%),
+        radial-gradient(120% 95% at 8% 108%, rgba(56,225,214,0.20), transparent 55%),
+        linear-gradient(180deg, #141033 0%, #0b0e26 58%, #0a0b1f 100%);
+}
+#sgwxDashboard::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(46% 32% at 78% 15%, rgba(255,255,255,0.10), transparent 62%);
+    animation: sgwxSky 16s ease-in-out infinite alternate;
+}
+@keyframes sgwxSky {
+    from { transform: translate(0, 0); }
+    to   { transform: translate(-20px, 14px); }
+}
+#sgwxDashTopBar, #sgwxDashScroll { position: relative; z-index: 1; }
+#sgwxDashTopBar {
+    background: rgba(11, 14, 38, 0.50);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+
+/* Frosted glass on every floating surface */
+.sgwx-card,
+.sgwx-week-card,
+.sgwx-week-detail,
+.sgwx-stat-tile,
+#sgwxDashSearchBox {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: var(--sgwx-glass-shadow);
+}
+.sgwx-stat-tile { border: 1px solid var(--sgwx-border); }
+/* Dropdown needs a denser ground so search results stay legible */
+#sgwxDashDropdown {
+    background: rgba(20, 16, 44, 0.88);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: var(--sgwx-glass-shadow);
+}
+
+/* Signature — hero temperature glow + condition orb */
+#sgwxDashTemp {
+    font-weight: 300;
+    letter-spacing: -3px;
+    text-shadow: 0 0 40px rgba(179,157,255,0.35);
+}
+#sgwxDashWeatherIcon { filter: drop-shadow(0 0 22px currentColor); }
+
+/* Signature — violet→cyan accent on the primary action + progress fills */
+#sgwxDashRadarBtn {
+    background: var(--sgwx-accent-grad);
+    color: #0a0b1f;
+    font-weight: 700;
+}
+#sgwxDashRadarBtn:hover { opacity: 0.9; }
+.sgwx-week-bar-fill, .sgwx-h-bar-fill { background: var(--sgwx-accent-grad); }
+.sgwx-week-today, .sgwx-week-selected { border-color: rgba(124,77,255,0.60); }
+.sgwx-week-today .sgwx-week-day,
+.sgwx-h-now .sgwx-h-time { color: var(--sgwx-purple); }
+
+@media (prefers-reduced-motion: reduce) {
+    #sgwxDashboard::before { animation: none; }
 }

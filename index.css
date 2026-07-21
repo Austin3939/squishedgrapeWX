@@ -2381,3 +2381,85 @@ td.day.active, span.month.active, span.year.active {
         bottom: 68px !important;
     }
 }
+
+/* ═══ ATMOSPHERE THEME LAYER (radar) ══════════════════════════════════════
+   Retint the radar chrome to match the forecast page: frosted indigo glass
+   surfaces, white hairline rims, and a violet→cyan signature accent. The map
+   itself stays as-is; station markers stay neutral for legibility over the
+   colored radar returns. */
+
+/* Left sidebar → frosted glass dock */
+.mapFooter {
+    background: rgba(11, 14, 38, 0.62);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-right: 1px solid rgba(255, 255, 255, 0.10);
+}
+.mapFooterMenuItem:hover { background-color: rgba(124, 77, 255, 0.22); }
+.menu_item_selected {
+    border-color: #7c4dff;
+    background: linear-gradient(135deg, #7c4dff, #38e1d6);
+    color: #0a0b1f;
+}
+.brand-sg { color: #b39dff; }
+.brand-wx { color: #38e1d6; }
+.sidebarDivider { background-color: rgba(255, 255, 255, 0.10); }
+
+/* Floating panels → frosted indigo glass */
+#infoPanel {
+    background-color: rgba(16, 12, 40, 0.68);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+#infoPanelProductsBtn:hover {
+    background-color: rgba(124, 77, 255, 0.25);
+    border-color: rgba(124, 77, 255, 0.60);
+    color: #eaf0ff;
+}
+.sgwxPanel {
+    background-color: rgba(16, 12, 40, 0.82);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+.sgwxPanelHeader {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+.sgwxPanelTitle { color: #eaf0ff; }
+#productSelectionMenu {
+    background-color: rgba(16, 12, 40, 0.86);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Map alert popup → glass with violet rim */
+.attic_popup {
+    background-color: rgba(16, 12, 40, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #d7ddf5;
+    border: 1px solid rgba(124, 77, 255, 0.50);
+}
+.attic_popup:after  { border-top-color: rgba(16, 12, 40, 0.92); }
+.attic_popup:before { border-top-color: rgba(124, 77, 255, 0.50); }
+
+/* Toggles + active controls → violet / cyan */
+.toggleSwitch:checked + .toggleSwitchCircle { background: #7c4dff; }
+.form-check-input:checked {
+    background-color: #7c4dff;
+    border-color: #7c4dff;
+}
+.sgwxToggleCheck:checked + .sgwxToggleSlider {
+    background: #7c4dff;
+    border-color: #9d7bff;
+}
+.sgwxSpcBtnActive {
+    background-color: rgba(124, 77, 255, 0.90) !important;
+    border-color: #9d7bff !important;
+}
+.sgwxSpcSlider::-webkit-slider-thumb {
+    background: #38e1d6;
+    border-color: #7c4dff;
+}
