@@ -52,11 +52,12 @@ function valueAtPoint(point) {
 }
 
 map.on('click', function(e) {
-    // Defer to other handlers when tapping a radar station marker or an alert
-    // border line (alertsLayer) — both have their own click behavior. Note we
-    // only check the alert border LINE, not the invisible fill, so taps inside
-    // an alert polygon still read the radar value.
-    var deferLayers = ['stationSymbolLayer', 'alertsLayer'].filter(function(id) {
+    // Defer to other handlers when tapping a radar station marker or anywhere
+    // inside an alert polygon — the station marker and the alert layers have
+    // their own click behavior. The alert fill (alertsLayerFill) covers the
+    // whole box, so a tap inside an alert opens the alert popup instead of
+    // reading the radar value; alertsLayer is kept for the border edge.
+    var deferLayers = ['stationSymbolLayer', 'alertsLayer', 'alertsLayerFill'].filter(function(id) {
         return map.getLayer(id);
     });
     if (deferLayers.length) {
