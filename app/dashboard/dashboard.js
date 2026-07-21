@@ -260,12 +260,14 @@ function _sgwxDashLoadLocation(lat, lon) {
     document.getElementById('sgwxDashLoading').style.display = 'flex';
     document.getElementById('sgwxDashContent').style.display = 'none';
     _sgwxDashFetch(lat, lon);
+    _sgwxDashFetchNws(lat, lon);
     _sgwxDashFetchPointAlerts(lat, lon);
     _sgwxDashFetchSpc(lat, lon);
     _sgwxDashFetchAqi(lat, lon);
     if (_sgwxDashRefreshTimer) clearInterval(_sgwxDashRefreshTimer);
     _sgwxDashRefreshTimer = setInterval(function() {
         _sgwxDashFetch(_sgwxDashLat, _sgwxDashLon);
+        _sgwxDashFetchNws(_sgwxDashLat, _sgwxDashLon);
         _sgwxDashFetchPointAlerts(_sgwxDashLat, _sgwxDashLon);
         _sgwxDashFetchSpc(_sgwxDashLat, _sgwxDashLon);
     }, 600000);
@@ -637,7 +639,7 @@ function _sgwxDashRender(data) {
         cape < 3000 ? 'Large' : 'Extreme');
 
     _sgwxDashRenderHourly(data.hourly);
-    _sgwxDashRenderDaily(data.daily);
+    // 7-day cards are rendered from NWS (_sgwxDashFetchNws), not Open-Meteo.
     _sgwxDashRenderSun(data.daily);
     _sgwxDashRenderPressureSparkline(data.hourly);
     _sgwxDashRenderCapeSparkline(data.hourly);
@@ -755,23 +757,196 @@ function _sgwxDashRenderHourly(hourly) {
     el.innerHTML = html;
 }
 
-function _sgwxDashRenderDaily(daily) {
+// ── 7-day forecast (NWS day/night periods) ────────────────────────────
+// The 7-day card row is driven by the NWS forecast API (US-only), which
+// provides human-written day/night narratives. Cards render from the daytime
+// high / nighttime low; clicking a card expands an inline day+night detail.
+var _sgwxNwsGroups    = [];    // [{ dateKey, date, day, night }]
+var _sgwxNwsOpenKey   = null;  // dateKey of the expanded day, or null
+var _sgwxNwsClickBound = false;
+
+function _sgwxDashFetchNws(lat, lon) {
+    // NWS wants <= 4 decimal places; more precision triggers a redirect.
+    fetch('https://api.weather.gov/points/' + lat.toFixed(4) + ',' + lon.toFixed(4))
+        .then(function(r) { if (!r.ok) throw new Error('points ' + r.status); return r.json(); })
+        .then(function(pt) {
+            var url = pt && pt.properties && pt.properties.forecast;
+            if (!url) throw new Error('no forecast url');
+            return fetch(url);
+        })
+        .then(function(r) { if (!r.ok) throw new Error('forecast ' + r.status); return r.json(); })
+        .then(function(fc) {
+            var periods = (fc && fc.properties && fc.properties.periods) || [];
+            _sgwxNwsGroups = _sgwxNwsGroup(periods);
+            if (!_sgwxNwsGroups.length) { _sgwxNwsRenderUnavailable(); return; }
+            _sgwxNwsRenderWeek();
+        })
+        .catch(function() {
+            _sgwxNwsGroups = [];
+            _sgwxNwsOpenKey = null;
+            _sgwxNwsRenderUnavailable();
+        });
+}
+
+// Group alternating day/night periods into per-calendar-day pairs.
+function _sgwxNwsGroup(periods) {
+    var byDate = {}, order = [];
+    for (var i = 0; i < periods.length; i++) {
+        var p = periods[i];
+        var d = new Date(p.startTime);
+        var key = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+        if (!byDate[key]) { byDate[key] = { dateKey: key, date: d, day: null, night: null }; order.push(key); }
+        if (p.isDaytime) byDate[key].day = p; else byDate[key].night = p;
+    }
+    return order.map(function(k) { return byDate[k]; }).slice(0, 7);
+}
+
+function _sgwxNwsPop(p) {
+    if (!p || !p.probabilityOfPrecipitation) return 0;
+    return p.probabilityOfPrecipitation.value || 0;
+}
+
+function _sgwxNwsDayLabel(group, index) {
+    if (index === 0) return 'Today';
+    return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][group.date.getDay()];
+}
+
+// NWS gives no WMO codes — map the condition token in the icon URL
+// (e.g. .../icons/land/day/tsra,40?size=medium -> "tsra") to the FA icon set.
+function _sgwxNwsIcon(period) {
+    var night = period ? period.isDaytime === false : false;
+    var token = '';
+    if (period && period.icon) {
+        var m = period.icon.match(/\/icons\/land\/(?:day|night)\/([a-z_]+)/i);
+        if (m) token = m[1].toLowerCase();
+    }
+    var map = {
+        skc:      night ? 'fa-moon' : 'fa-sun',
+        few:      night ? 'fa-moon' : 'fa-sun',
+        wind_skc: night ? 'fa-moon' : 'fa-sun',
+        wind_few: night ? 'fa-moon' : 'fa-sun',
+        hot:      night ? 'fa-moon' : 'fa-sun',
+        sct:      night ? 'fa-cloud-moon' : 'fa-cloud-sun',
+        bkn:      night ? 'fa-cloud-moon' : 'fa-cloud-sun',
+        wind_sct: night ? 'fa-cloud-moon' : 'fa-cloud-sun',
+        wind_bkn: night ? 'fa-cloud-moon' : 'fa-cloud-sun',
+        ovc:      'fa-cloud',
+        wind_ovc: 'fa-cloud',
+        rain:            'fa-cloud-rain',
+        rain_showers:    'fa-cloud-rain',
+        rain_showers_hi: 'fa-cloud-rain',
+        rain_sleet:      'fa-cloud-rain',
+        sleet:           'fa-cloud-rain',
+        fzra:            'fa-cloud-rain',
+        rain_fzra:       'fa-cloud-rain',
+        snow_fzra:       'fa-snowflake',
+        rain_snow:       'fa-snowflake',
+        snow:            'fa-snowflake',
+        snow_sleet:      'fa-snowflake',
+        blizzard:        'fa-snowflake',
+        cold:            'fa-snowflake',
+        tsra:            'fa-cloud-bolt',
+        tsra_sct:        'fa-cloud-bolt',
+        tsra_hi:         'fa-cloud-bolt',
+        tornado:         'fa-cloud-bolt',
+        hurricane:       'fa-cloud-bolt',
+        tropical_storm:  'fa-cloud-bolt',
+        fog:   'fa-smog',
+        haze:  'fa-smog',
+        smoke: 'fa-smog',
+        dust:  'fa-smog'
+    };
+    return { icon: map[token] || 'fa-cloud' };
+}
+
+function _sgwxNwsRenderWeek() {
     var el = document.getElementById('sgwxDashDailyList');
     if (!el) return;
-    el.innerHTML = daily.time.map(function(t, i) {
-        var wmo  = _sgwxWmoGet(daily.weather_code[i], false);
-        var pop  = daily.precipitation_probability_max[i] || 0;
-        var high = Math.round(daily.temperature_2m_max[i]);
-        var low  = Math.round(daily.temperature_2m_min[i]);
-        var clr  = _sgwxIconColor(wmo.icon);
-        return '<div class="sgwx-week-card' + (i === 0 ? ' sgwx-week-today' : '') + '">' +
-            '<div class="sgwx-week-day">' + _sgwxDayName(t, i) + '</div>' +
-            '<i class="fa ' + wmo.icon + ' sgwx-week-icon" style="color:' + clr + '"></i>' +
-            '<div class="sgwx-week-high">' + high + '°</div>' +
-            '<div class="sgwx-week-low">' + low + '°</div>' +
+    _sgwxNwsBindClicks();
+    if (!_sgwxNwsGroups.length) { _sgwxNwsRenderUnavailable(); return; }
+    el.innerHTML = _sgwxNwsGroups.map(function(g, i) {
+        var base = g.day || g.night;
+        var ic   = _sgwxNwsIcon(base);
+        var clr  = _sgwxIconColor(ic.icon);
+        var high = g.day   ? Math.round(g.day.temperature)   + '°' : '—';
+        var low  = g.night ? Math.round(g.night.temperature) + '°' : '—';
+        var pop  = _sgwxNwsPop(g.day) || _sgwxNwsPop(g.night) || 0;
+        var sel  = g.dateKey === _sgwxNwsOpenKey ? ' sgwx-week-selected' : '';
+        return '<div class="sgwx-week-card' + (i === 0 ? ' sgwx-week-today' : '') + sel + '"' +
+            ' role="button" tabindex="0" data-sgwx-day="' + g.dateKey + '">' +
+            '<div class="sgwx-week-day">' + _sgwxNwsDayLabel(g, i) + '</div>' +
+            '<i class="fa ' + ic.icon + ' sgwx-week-icon" style="color:' + clr + '"></i>' +
+            '<div class="sgwx-week-high">' + high + '</div>' +
+            '<div class="sgwx-week-low">' + low + '</div>' +
             '<div class="sgwx-week-bar-track"><div class="sgwx-week-bar-fill" style="height:' + pop + '%"></div></div>' +
         '</div>';
     }).join('');
+    _sgwxNwsRenderDetail();
+}
+
+function _sgwxNwsRenderUnavailable() {
+    var el = document.getElementById('sgwxDashDailyList');
+    if (el) el.innerHTML = '<div class="sgwx-week-msg">Detailed forecast unavailable — NWS covers U.S. locations only.</div>';
+    var d = document.getElementById('sgwxDashDailyDetail');
+    if (d) { d.hidden = true; d.innerHTML = ''; }
+}
+
+function _sgwxNwsRenderDetail() {
+    var el = document.getElementById('sgwxDashDailyDetail');
+    if (!el) return;
+    var g = null, idx = -1;
+    for (var i = 0; i < _sgwxNwsGroups.length; i++) {
+        if (_sgwxNwsGroups[i].dateKey === _sgwxNwsOpenKey) { g = _sgwxNwsGroups[i]; idx = i; break; }
+    }
+    if (!g) { el.hidden = true; el.innerHTML = ''; _sgwxNwsOpenKey = null; return; }
+    var title = idx === 0 ? 'Today' : g.date.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+    el.innerHTML =
+        '<div class="sgwx-week-detail-title">' + title + '</div>' +
+        _sgwxNwsBlock(g.day, false) +
+        _sgwxNwsBlock(g.night, true);
+    el.hidden = false;
+}
+
+function _sgwxNwsBlock(p, night) {
+    if (!p) return '';
+    var ic   = _sgwxNwsIcon(p);
+    var clr  = _sgwxIconColor(ic.icon);
+    var pop  = _sgwxNwsPop(p);
+    var wind = (p.windSpeed || '') + (p.windDirection ? ' ' + p.windDirection : '');
+    return '<div class="sgwx-week-detail-block">' +
+        '<div class="sgwx-week-detail-head">' +
+            '<i class="fa ' + ic.icon + '" style="color:' + clr + '"></i>' +
+            '<span class="sgwx-week-detail-label">' + (night ? 'Night' : 'Day') + '</span>' +
+            '<span class="sgwx-week-detail-temp">' + Math.round(p.temperature) + '°' + (p.temperatureUnit || 'F') + '</span>' +
+        '</div>' +
+        '<div class="sgwx-week-detail-meta">' +
+            (wind.trim() ? '<span><i class="fa fa-wind"></i> ' + wind + '</span>' : '') +
+            (pop ? '<span><i class="fa fa-droplet"></i> ' + pop + '%</span>' : '') +
+        '</div>' +
+        '<div class="sgwx-week-detail-text">' + (p.detailedForecast || p.shortForecast || '') + '</div>' +
+    '</div>';
+}
+
+function _sgwxNwsToggle(key) {
+    if (!key) return;
+    _sgwxNwsOpenKey = (_sgwxNwsOpenKey === key) ? null : key;
+    _sgwxNwsRenderWeek();
+}
+
+function _sgwxNwsBindClicks() {
+    if (_sgwxNwsClickBound) return;
+    var el = document.getElementById('sgwxDashDailyList');
+    if (!el) return;
+    el.addEventListener('click', function(e) {
+        var card = e.target.closest && e.target.closest('.sgwx-week-card');
+        if (card && el.contains(card)) _sgwxNwsToggle(card.getAttribute('data-sgwx-day'));
+    });
+    el.addEventListener('keydown', function(e) {
+        if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+        var card = e.target.closest && e.target.closest('.sgwx-week-card');
+        if (card && el.contains(card)) { e.preventDefault(); _sgwxNwsToggle(card.getAttribute('data-sgwx-day')); }
+    });
+    _sgwxNwsClickBound = true;
 }
 
 // ── Moon phase ────────────────────────────────────────────────────────

@@ -48,17 +48,20 @@ function _add_alert_layers(geojson) {
             }
         });
 
-        // Alert info is triggered by clicking/tapping the alert's border line
-        // (alertsLayer), not the filled interior — that leaves the interior
-        // free for the radar value tooltip (see inspector/click_value.js).
-        map.on('mouseover', `alertsLayer`, function(e) {
+        // Alert info is triggered by clicking/tapping anywhere inside the
+        // alert polygon (alertsLayerFill), not just the border line. The fill
+        // is drawn with fill-opacity 0 but stays interactive, so a tap anywhere
+        // in the box opens the alert popup. Because the fill covers the whole
+        // box, this suppresses the radar value tooltip inside alert polygons
+        // (see inspector/click_value.js).
+        map.on('mouseover', `alertsLayerFill`, function(e) {
             map.getCanvas().style.cursor = 'pointer';
         });
-        map.on('mouseout', `alertsLayer`, function(e) {
+        map.on('mouseout', `alertsLayerFill`, function(e) {
             map.getCanvas().style.cursor = '';
         });
 
-        map.on('click', `alertsLayer`, click_listener);
+        map.on('click', `alertsLayerFill`, click_listener);
     }
 }
 
